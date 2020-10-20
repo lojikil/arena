@@ -1,0 +1,366 @@
+# 1) length of string
+
+a = "\0foo\0bar\0";
+b = strlen(a);
+
+if (b != 9) exit(1);
+
+
+# 2) string concatenation
+
+a = "\0foo\0";
+b = "bar\0";
+c = strcat(a,b);
+
+if (c != "\0foo\0bar\0") exit(2);
+
+
+# 3) leftmost character position
+
+a = "\0foo\0";
+b = strchr(a, "o");
+
+if (b != 2) exit(3);
+
+
+# 4) rightmost character position
+
+a = "\0foo\0";
+b = strrchr(a, "o");
+
+if (b != 3) exit(4);
+
+
+# 5) position of substring
+
+a = "\0foo\0bar\0";
+b = strstr(a, "bar");
+
+if (b != 5) exit(5);
+
+
+# 6) convert to lower case
+
+a = "\0foo\0BAR\0";
+b = tolower(a);
+
+if (b != "\0foo\0bar\0") exit(6);
+
+
+# 7) convert to upper case
+
+a = "\0foo\0BAR\0";
+b = toupper(a);
+
+if (b != "\0FOO\0BAR\0") exit(7);
+
+
+# 8) alphanumeric test
+
+a = "abc123";
+b = "12345.";
+p = isalnum(a);
+q = isalnum(b);
+
+if (!p || q) exit(8);
+
+
+# 9) alphabetic test
+
+a = "abcdef";
+b = "abc6ef";
+p = isalpha(a);
+q = isalpha(b);
+
+if (!p || q) exit(9);
+
+
+# 10) control character test
+
+a = "\n\t\n";
+b = "\n12\t";
+p = iscntrl(a);
+q = iscntrl(b);
+
+if (!p || q) exit(10);
+
+
+# 11) graphical test
+
+a = "abc123";
+b = "\n1234";
+p = isgraph(a);
+q = isgraph(b);
+
+if (!p || q) exit(11);
+
+
+# 12) lowercase test
+
+a = "abcdef";
+b = "abcDEF";
+p = islower(a);
+q = islower(b);
+
+if (!p || q) exit(12);
+
+
+# 13) printing character test
+
+a = "abc123";
+b = "\n1234";
+p = isprint(a);
+q = isprint(b);
+
+if (!p || q) exit(13);
+
+
+# 14) punctuation test
+
+a = ".;!?:.";
+b = "abcdef";
+p = ispunct(a);
+q = ispunct(b);
+
+if (!p || q) exit(14);
+
+
+# 15) whitespace test
+
+a = "\n\t  ";
+b = "  a  b";
+p = isspace(a);
+q = isspace(b);
+
+if (!p || q) exit(15);
+
+
+# 16) uppercase test
+
+a = "ABCDEF";
+b = "ABC6EF";
+p = isupper(a);
+q = isupper(b);
+
+if (!p || q) exit(16);
+
+
+# 17) hexadecimal digit test
+
+a = "abc123";
+b = "gh127t";
+p = isxdigit(a);
+q = isxdigit(b);
+
+if (!p || q) exit(17);
+
+
+# 18) substring from index
+
+a = "\0foo\0bar\0";
+b = substr(a, 5);
+
+if (b != "bar\0") exit(18);
+
+
+# 19) substring from index with length
+
+a = "\0foo\0bar\0";
+b = substr(a, 5, 3);
+
+if (b != "bar") exit(19);
+
+
+# 20) substring index out of range
+
+a = "foo";
+b = substr(a, 10);
+
+if (b != "") exit(20);
+
+
+# 21) substring length out of range
+
+a = "foobar";
+b = substr(a, 3, 200);
+
+if (b != "bar") exit(21);
+
+
+# 22) left part of string
+
+a = "\0foo\0bar\0";
+b = left(a, 4);
+
+if (b != "\0foo") exit(22);
+
+
+# 23) too large left part
+
+a = "foo";
+b = left(a, 10);
+
+if (b != "foo") exit(23);
+
+
+# 24) right part of string
+
+a = "\0foo\0bar\0";
+b = right(a, 4);
+
+if (b != "bar\0") exit(24);
+
+
+# 25) too large right part
+
+a = "foo";
+b = right(a, 20);
+
+if (b != "foo") exit(25);
+
+
+# 26) ordinal of first character
+
+a = "@foo";
+b = ord(a);
+
+if (b != 64) exit(26);
+
+
+# 27) character from ordinal
+
+a = 64;
+b = chr(a);
+
+if (b != "@") exit(27);
+
+
+# 28) inverse ord and chr
+
+a = "x";
+b = chr(ord(a));
+
+if (a != b) exit(28);
+
+
+# 29) octal string escape format 1
+
+a = "foo\01004bar";
+b = ord(substr(a, 3, 1));
+c = ord(substr(a, 4, 1));
+
+if (b != 64 || c != ord("4")) exit(29);
+
+
+# 30) octal string escape format 2
+
+a = "foo\1004bar";
+b = ord(substr(a, 3, 1));
+c = ord(substr(a, 4, 1));
+
+if (b != 64 || c != ord("4")) exit(30);
+
+
+# 31) octal string escape format 3
+
+a = "foo\o1004bar";
+b = ord(substr(a, 3, 1));
+c = ord(substr(a, 4, 1));
+
+if (b != 64 || c != ord("4")) exit(31);
+
+
+# 32) decimal string escape
+
+a = "foo\d0644bar";
+b = ord(substr(a, 3, 1));
+c = ord(substr(a, 4, 1));
+
+if (b != 64 || c != ord("4")) exit(32);
+
+
+# 33) hexadecimal string escape
+
+a = "foo\x404bar";
+b = ord(substr(a, 3, 1));
+c = ord(substr(a, 4, 1));
+
+if (b != 64 || c != ord("4")) exit(33);
+
+
+# 34) leading characters from set
+
+a = "foo\0bar\0";
+n = strspn(a, "fo\0");
+
+if (n != 4) exit(34);
+
+
+# 35) leading characters not from set
+
+a = "foo\0bar\0";
+n = strcspn(a, "ra\0b");
+
+if (n != 3) exit(35);
+
+
+# 36) position of first character from set
+
+a = "foo\0bar\0";
+n = strpbrk(a, "\0abr");
+
+if (n != 3) exit(36);
+
+
+# 37) locale-based string compare
+
+a = "aaa";
+b = "bbb";
+x = strcoll(a, a);
+y = strcoll(a, b);
+z = strcoll(b, a);
+
+if (x != 0 || y >= 0 || z <= 0) exit(37);
+
+
+# 38) explode string into array
+
+a = "foo";
+b = explode(a);
+
+if ((int) b != 3 || b[0] != "f" || b[1] != "o" || b[2] != "o") exit(38);
+
+
+# 39) implode array into string
+
+a = mkarray("h", "e", "l", "l", "o");
+b = implode(a);
+
+if (b != "hello") exit(39);
+
+
+# 40) remove leading whitespace
+
+a = " foo ";
+b = ltrim(a);
+
+if (b != "foo ") exit(40);
+
+
+# 41) remove trailing whitespace
+
+a = " foo ";
+b = rtrim(a);
+
+if (b != " foo") exit(41);
+
+
+# 42) remove leading and trailing whitespace
+
+a = " foo ";
+b = trim(a);
+
+if (b != "foo") exit(42);
+
+
+print("42 subtests ");

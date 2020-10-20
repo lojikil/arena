@@ -1,0 +1,32 @@
+SOURCES = array.c dict.c file.c function.c locale.c math.c \
+          print.c random.c register.c runtime.c string.c struct.c \
+          system.c time.c list.c foreign.c memory.c pcre.c
+OBJECTS = array.o dict.o file.o function.o locale.o math.o \
+          print.o random.o register.o runtime.o string.o struct.o \
+          system.o time.o list.o foreign.o memory.o pcre.o
+LIB = libstdlib.a
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+
+all: $(LIB)
+
+$(LIB): $(OBJECTS)
+	ar -crs $@ $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f $(OBJECTS)
+	rm -f $(LIB)
+
+distclean: clean
+	rm -f Makefile
+
+realclean: clean
+
+depend: $(SOURCES)
+	$(CC) $(CFLAGS) -MM $(SOURCES) >> Makefile
+
+# automatically generated dependencies follow

@@ -1,0 +1,19 @@
+# 1) random
+
+a = rand(10,90);
+
+if (a < 10 || a > 90) exit(1);
+
+
+# 2) srandom
+
+srand(42);
+a = rand(0, 10000);
+b = rand(0, 10000);
+srand(42);
+c = rand(0, 10000);
+
+if (a == b || a != c) exit(2);
+
+
+print("2 subtests ");

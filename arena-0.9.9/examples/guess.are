@@ -1,0 +1,15 @@
+x = rand(1,100);
+
+print("Guess a number between 1 and 100.\n");
+
+turns = 1;
+while (true) {
+  print("Your guess? ");
+  reply = (int) fgets(stdin);
+  if (reply == x) break;
+  if (reply  < x) print("Too small.\n");
+  if (reply  > x) print("Too big.\n");
+  ++turns;
+}
+
+print("You needed ", turns, " turns\n");

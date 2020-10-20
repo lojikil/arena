@@ -1,0 +1,17 @@
+# 1) post-increment of int
+
+a = 5;
+b = a++;
+
+if (a != 6 || b != 5) exit(1);
+
+
+# 2) post-decrement of int
+
+a = 5;
+b = a--;
+
+if (a != 4 || b != 5) exit(2);
+
+
+print("2 subtests ");

@@ -1,0 +1,34 @@
+SOURCES = eval_assign.c eval_bitwise.c eval_bool.c eval_call.c \
+          eval_cast.c eval_const.c eval_expr.c eval_infix.c eval_math.c \
+          eval_method.c eval_order.c eval_postfix.c eval_prefix.c \
+          eval_ref.c eval_stmt.c eval_switch.c
+OBJECTS = eval_assign.o eval_bitwise.o eval_bool.o eval_call.o \
+          eval_cast.o eval_const.o eval_expr.o eval_infix.o eval_math.o \
+          eval_method.o eval_order.o eval_postfix.o eval_prefix.o \
+          eval_ref.o eval_stmt.o eval_switch.o
+LIB = libeval.a
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+
+all: $(LIB)
+
+$(LIB): $(OBJECTS)
+	ar -crs $@ $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f $(OBJECTS)
+	rm -f $(LIB)
+
+distclean: clean
+	rm -f Makefile
+
+realclean: clean
+
+depend: $(SOURCES)
+	$(CC) $(CFLAGS) -MM $(SOURCES) >> Makefile
+
+# automatically generated dependencies follow

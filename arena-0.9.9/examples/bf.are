@@ -1,0 +1,158 @@
+// Arena Brainf*k threaded optimizing interpreter - Copyright 2006 J.L. Bezemer
+// You can redistribute this file and/or modify it under
+// the terms of the GNU General Public License
+
+// Values are pushed on the stack by push() and popped
+// from the stack by pop(). The stackpointer is stored in sp.
+
+stack = mkarray ();                    // this is the stack
+sp = 0;                                // this is the stack pointer
+
+int pop () {
+  if (sp > 0) {                        // if values on the stack
+     n = (stack [--sp]);               // return a value
+     global ("stack", "sp");
+     return (n);
+  } else {                             // else throw an exception
+    throw ("Unmatched [");
+    return (0);
+  }
+}
+
+void push (int n) {
+  stack [sp++] = n;                    // push a value on the stack
+  global ("stack", "sp");
+}
+
+// This is a brainf*k compatible input buffer. The interpreter reads one
+// character at the time, although the user can fill the entire buffer at
+// one go. If the buffer is empty, the user is prompted again.
+
+tib = "";
+
+int key () {                           // if buffer empty prompt user
+  if (strlen (tib) == 0) tib = fgets (stdin);
+  c = left (tib, 1); tib = right (tib, strlen (tib) - 1); global ("tib");
+  return (ord (c) == () ? 0 : ord (c)); // return a character value
+}
+
+// These are the code-, parameter-, data- and symbolsegment 
+// of the brackf*k interpreter. 'mp' is a pointer to the currently
+// accessed memory location
+
+cs = ps = ds = ss = mkarray (0);
+mp = 0;
+
+// These are all the brainf*k instructions. The last one was added in order
+// to provide a return instruction to the calling program
+
+int m_move (int ip) { mp += ps [ip]; global ("mp"); return (++ip); }
+int m_add  (int ip) { ds [mp] += ps [ip]; global ("ds"); return (++ip);}
+int m_get  (int ip) { ds [mp] = key (); global ("ds"); return (++ip); }
+int m_put  (int ip) { printf ("%s", chr (ds [mp])); return (++ip); }
+int p_do   (int ip) { return ((ds [mp] & 255) == 0 ? ps [ip] : ++ip); }
+int p_loop (int ip) { return (ps [ip]); }
+int p_exit (int ip) { exit (0); return (ip); }
+
+// This function compiles an instruction, no questions asked. All
+// segments (code, parameter and symbol) are updated
+
+int compile (fn a, string b, int c, int d) {
+   cs [d] = a;
+   ss [d] = b;
+   ps [d] = c;
+   global ("cs", "ps", "ss");
+   return (++d);
+}
+
+// This function tries to figure out whether the instruction to be
+// compiled is actually of the same family as the previous instruction
+// that has been compiled. If it is, it just changes the parameter segment
+// accordingly, but does not compile a new instruction
+
+int optimize (fn a, string b, int c, int d) {
+  if ((d) && (ss [d - 1] == b)) ps [d - 1] += c;
+  else d = compile (a, b, c, d);
+  global ("ps");
+  return (d);
+}
+
+// These are the instructions of how to compile the brainf*k operators.
+// They contain the brainf*k instruction, the symbolic name, the change
+// in the parameter segment and the current program counter. Note not
+// all brainf*k instructions can be optimized
+
+int do_next (int pc) { return (optimize (m_move, "move",  1, pc)); }
+int do_prev (int pc) { return (optimize (m_move, "move", -1, pc)); }
+int do_inc  (int pc) { return (optimize (m_add, "add",  1, pc)); }
+int do_dec  (int pc) { return (optimize (m_add, "add", -1, pc)); }
+int do_put  (int pc) { return (compile (m_put, "put", 0, pc)); }
+int do_get  (int pc) { return (compile (m_get, "get", 0, pc)); }
+int do_do   (int pc) { push (pc); return (compile (p_do, "jump0", 0, pc)); }
+
+int do_loop (int pc) {
+  ps [(addr = pop ())] = pc + 1;       // patch backlink address
+  global ("ps");
+  return (compile (p_loop, "jump", addr, pc));
+}
+
+// This table matches the brainf*k operators to compilation instructions
+
+symbols = mkstruct (
+  ">", do_next, 
+  "<", do_prev, 
+  "+", do_inc, 
+  "-", do_dec, 
+  ".", do_put,
+  ",", do_get,
+  "[", do_do, 
+  "]", do_loop 
+);
+
+// This one actually compiles a brainf*k program to a serie of Arena calls.
+
+void compile_bf (f) {
+  pc = 0;
+  while ((char = fgetc (f)) != ()) {   // get a brainf*k keyword
+    assemble = struct_get (symbols, char);
+    if (assemble != ()) pc = assemble (pc);
+  }                                    // compile as long as there is keyword
+  compile (p_exit, "exit", 0, pc);     // compile the exit instruction
+  if (sp != 0) throw ("Unmatched ]");  // check the stack (all addr compiled)
+}
+
+// This function allows you to decompile a compiled brainf*k program
+
+void decompile_bf () {
+  for (x = 0; ss [x] != "exit"; x++)
+      printf ("[%4d] %-5s (%d)\n", x, ss [x], ps [x]);
+}
+
+// Execute the compiled program
+
+void execute_bf () {
+  ip = 0;                              // reset instruction pointer
+  for (;;) {                           // do this forever
+    operator = cs [ip];                // get the next operator
+    ip = operator (ip);                // and execute it
+  }
+}
+
+// This is the main function. It opens the file, compiles the program
+// and runs the command
+
+void run (string name, fn do_bf) {
+  if ((f = fopen (name, "r")) != ()) {
+     try {
+        compile_bf (f);                // compile the program
+        fclose (f);                    // close the file
+        do_bf ();                      // then execute it
+     } catch (e) printf ("%s ", e);    // catch any exceptions
+  }
+}
+
+switch (argc) {
+  case (2): run (argv [1], execute_bf); break;
+  case (3): run (argv [2], decompile_bf); break;
+  default : print ("Usage: bf [d] filename.b\n"); break;
+}

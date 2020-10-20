@@ -1,0 +1,54 @@
+# preliminary work
+
+if (!pcre_supported()) exit(0);
+
+
+# 1) compile regular expression
+
+a = pcre_compile("f(o+)bar", 0);
+
+if (!is_resource(a) || !is_pcre_resource(a)) exit(1);
+
+
+# 2) check for match
+
+a = pcre_compile("f(o+)bar", PCRE_CASELESS);
+b = pcre_match(a, "Foobar", 0);
+c = pcre_match(a, "fobar", 0);
+d = pcre_match(a, "fbar", 0);
+
+if (b != true || c != true || d != false) exit(2);
+
+
+# 3) information about successful match
+
+a = pcre_compile("f(o+)bar", PCRE_CASELESS);
+b = pcre_exec(a, "Foobar", 0);
+
+if ((int) b != 2 || b[0] != "Foobar" || b[1] != "oo") exit(3);
+
+
+# 4) information unsuccessful match
+
+a = pcre_compile("f(o+)bar", PCRE_CASELESS);
+b = pcre_exec(a, "fbar", 0);
+
+if (!is_array(b) || (int) b != 0) exit(4);
+
+
+# 5) freeing a regular expression
+
+a = pcre_compile("f(o+)bar", PCRE_CASELESS);
+pcre_free(a);
+
+
+# 6) use after free
+
+a = pcre_compile("f(o+)bar", PCRE_CASELESS);
+pcre_free(a);
+b = pcre_match(a, "foobar", 0);
+
+if (!is_void(b)) exit(6);
+
+
+print("6 subtests ");

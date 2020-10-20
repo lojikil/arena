@@ -1,0 +1,7 @@
+# 1) cast return value to fn
+
+forced fn foo()
+{
+  return 12;
+}
+foo();

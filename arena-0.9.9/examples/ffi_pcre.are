@@ -1,0 +1,53 @@
+template pcre
+{
+  lib;
+  regex;
+
+  void pcre(string pattern)
+  {
+    if (!dyn_supported()) throw "dynamic loading not supported";
+
+    this.lib = dyn_open("libpcre.so.0");
+    if (!is_resource(this.lib)) throw "libpcre not found";
+
+    err = malloc(8);
+    if (!is_resource(err)) throw "out of memory";
+
+    this.regex = dyn_call_ptr(this.lib, "pcre_compile", pattern, 0,
+                              err, err, 0, true);
+    if (!is_resource(this.regex)) throw "pcre call failed";
+  }
+
+  array exec(string subject)
+  {
+    matches = calloc(4, 99);
+    if (!is_resource(matches)) throw "out of memory";   
+ 
+    res = dyn_call_int(this.lib, "pcre_exec", this.regex, 0,
+                       subject, strlen(subject), 0, 0, matches, 99);
+    if (res < 0) throw strcat("pcre error ", res);
+
+    data = mkarray();
+    for (i = 0; i < res; i++) {
+      start = mgetint(matches, i * 8);
+      end   = mgetint(matches, i * 8  + 4);
+      if (start == -1) {
+        data[i] = ();
+      } else {
+        data[i] = substr(subject, start, end - start);
+      }
+    }
+    return data;
+  }
+
+}
+
+try {
+  p = new pcre("(a|(z))(bc)");
+  matches = p.exec("abcdef");
+  dump(matches);
+  matches = p.exec("zbc");
+  dump(matches);
+} catch (e) {
+  print("Exception: ", e, "\n");
+}

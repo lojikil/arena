@@ -1,0 +1,54 @@
+.\"
+.\" (C) 2006, Pascal Schmidt <arena-language@ewetel.net>
+.\"
+.TH arena 1 "18 May 2006"
+.SH NAME
+arena \- scripting language interpreter
+.SH SYNOPSIS
+.BI "@prefix@/bin/arena [" " options " "]" " script " "[" " script options " "]"
+.SH DESCRIPTION
+The
+.B arena
+program is an interpreter for the Arena scripting language.
+It uses the first non-option argument as the script file
+to interpret and passes all following command line options
+to the script.
+.P
+Option processing can be aborted by using the special option
+.BR "\-\-" .
+The next command line argument will be taken as the script
+to execute even if it matches a regular interpreter option.
+.SH OPTIONS
+.TP
+.BR "\-h" " or " "\-\-help"
+Display a short option summary.
+.TP
+.BR "\-V" " or " "\-\-version"
+Display the version number of the interpreter.
+.TP
+.BR "\-c" " or " "\-\-check"
+Perform only syntax checking. The script will be read and
+parsed by the interpreter. Syntax errors will be reported,
+but the script is not executed on a successful parse.
+.TP
+.BR "\-d" " or " "\-\-dump"
+Dump script contents on standard output. The script will
+be read an parsed by the interpreter, but not executed.
+Instead, the interpreter prints out its internal parse
+tree of the script, converted back into Arena source
+code. Comments from the input script may be missing, and
+some language constructs may be expanded to a different form.
+
+This option is intended for debugging the interpreter
+itself, in the case that it misinterprets a script.
+.SH DIAGNOSTICS
+If a syntax or runtime error occurs, the exit status of
+the interpreter is 1 and a diagnostic message is printed
+on standard error.
+
+If no syntax or runtime error occurs, the exit status of the
+interpreter is that of the script executed. Note that some
+debugging options of the interpreter itself will preclude the
+script from running. In that case the exit status is 0.
+.SH AUTHOR
+Pascal Schmidt

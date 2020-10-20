@@ -1,0 +1,106 @@
+# 1) get field
+
+a.foo = 12;
+b = struct_get(a, "foo");
+
+if (b != 12) exit(1);
+
+
+# 2) set field
+
+a.foo = 42;
+b = struct_set(a, "foo", "2.41");
+
+if (a.foo != 42 || b.foo != "2.41") exit(2);
+
+
+# 3) unset field
+
+a.foo = 12;
+a.bar = 100;
+b = struct_unset(a, "foo");
+
+if (a.foo != 12 || a.bar != 100 || b.foo != () || b.bar != 100) exit(3);
+
+
+# 4) field list
+
+a = mkstruct("foo", 42, "bar", 100);
+b = struct_fields(a);
+
+if ((int) b != 2 || b[0] != "foo" || b[1] != "bar") exit(4);
+
+
+# 5) field test
+
+a = mkstruct("foo", 42, "bar", 100);
+p = is_field(a, "foo");
+q = is_field(a, "qux");
+
+if (!p || q) exit(5);
+
+
+# 6) merge structures
+
+a = mkstruct("foo", 42, "bar", 100);
+b = mkstruct("qux", 12);
+c = struct_merge(a, b);
+
+if (c.foo != 42 || c.bar != 100 || c.qux != 12) exit(6);
+
+
+# 7) merge with overwrite
+
+a = mkstruct("foo", 42, "bar", 100);
+b = mkstruct("foo", 12);
+c = struct_merge(a, b);
+
+if (c.foo != 12 || c.bar != 100) exit(7);
+
+
+# 8) method list
+
+template foo
+{
+  void x() { return 0; }
+  void y() { return 1; }
+}
+a = new foo();
+b = struct_methods(a);
+
+if ((int) b != 2 || b[0] != "y" || b[1] != "x") exit(8);
+
+
+# 9) method test
+
+template foo
+{
+  void x() { return 0; }
+  void y() { return 1; }
+}
+a = new foo();
+
+if (!is_method(a, "x") || is_method(a,"foo")) exit(9);
+
+
+# 10) struct merge with functions
+
+template foo
+{
+  i = 1;
+  void x() { return 0; }
+}
+template bar
+{
+  i = 2;
+  void y() { return 1; }
+}
+a = new foo();
+b = new bar();
+c = struct_merge(a,b);
+
+if (c.__template != "bar" || c.i != 2 || !is_method(c, "x") ||
+    !is_method(c, "y")) exit(10);
+
+
+print("10 subtests ");

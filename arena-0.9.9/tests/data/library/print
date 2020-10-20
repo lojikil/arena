@@ -1,0 +1,136 @@
+# 1) format plain int
+
+a = 12;
+b = sprintf("%i", a);
+
+if (b != "12") exit(1);
+
+
+# 2) format int with width
+
+a = 12;
+b = sprintf("%4i", a);
+
+if (b != "  12") exit(2);
+
+
+# 3) format int with zero fill
+
+a = 12;
+b = sprintf("%04i", a);
+
+if (b != "0012") exit(3);
+
+
+# 4) format int left adjusted
+
+a = 12;
+b = sprintf("%-4i", a);
+
+if (b != "12  ") exit(4);
+
+
+# 5) format int with sign
+
+a = 12;
+b = sprintf("%+i", a);
+
+if (b != "+12") exit(5);
+
+
+# 6) format plain float
+
+a = 12.5;
+b = sprintf("%f", a);
+
+if (b != "12.500000") exit(6);
+
+
+# 7) format float with width
+
+a = 12.5;
+b = sprintf("%10f", a);
+
+if (b != " 12.500000") exit(7);
+
+
+# 8) format float with zero fill
+
+a = 12.5;
+b = sprintf("%010f", a);
+
+if (b != "012.500000") exit(8);
+
+
+# 9) format float with sign
+
+a = 12.5;
+b = sprintf("%+10f", a);
+
+if (b != "+12.500000") exit(9);
+
+
+# 10) format float with precision
+
+a = 12.5;
+b = sprintf("%.2f", a);
+
+if (b != "12.50") exit(10);
+
+
+# 11) format float with left adjustment
+
+a = 12.5;
+b = sprintf("%-10f", a);
+
+if (b != "12.500000 ") exit(11);
+
+
+# 12) format plain string
+
+a = "foo";
+b = sprintf("%s", a);
+
+if (b != "foo") exit(12);
+
+
+# 13) format string with width
+
+a = "foo";
+b = sprintf("%6s", a);
+
+if (b != "   foo") exit(13);
+
+
+# 14) format string left adjusted
+
+a = "foo";
+b = sprintf("%-6s", a);
+
+if (b != "foo   ") exit(14);
+
+
+# 15) no format
+
+b = sprintf("foo");
+
+if (b != "foo") exit(15);
+
+
+# 16) plain percent sign
+
+b = sprintf("%%");
+
+if (b != "%") exit(16);
+
+
+# 17) multiple conversions
+
+a = 12.5;
+b = "foo";
+c = sprintf("%2.2f %% %s", a, b);
+
+if (c != "12.50 % foo") exit(17);
+
+
+print("17 subtests ");

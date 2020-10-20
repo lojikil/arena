@@ -1,0 +1,75 @@
+// Lunar Lander by Diomidis Spinellis, Chipmunk Basic version
+// I know it stinks as a game, but see it as a relic from old times.
+// Ingemar Ragnemalm, PhD
+// Image processing, Mac shareware games
+// E-mail address: ingemar@isy.liu.se or ingemar@lysator.liu.se
+// Arena version, 2006 Hans Bezemer
+
+int enter () {
+  return ((int) (fgets (stdin)));
+}
+
+void ready () {
+  print ("Ready for detachment\n");
+  print (" -- COUNTDOWN --\n");
+  for (x = 10; x > 0; x--) printf ("%d ", x);
+  print ("\nYou have left the spacecraft.\n");
+  print ("Try to land with velocity less than 5 m/sec.\n\n");
+}
+
+void meter (int v, int h, int f) {
+  print  ("Meter readings\n"); 
+  print  ("--------------\n");
+  printf ("Fuel (gal): %d\n", f);
+  print  (h > 0 ? "Landing v" : "V");
+  printf ("elocity (m/sec): %d\n", v);
+  printf ("Height (m): %d\n\n", h);
+}
+
+bool boost_not_ok (int u, int f) {
+  if (u < 0) print ("No cheating please! Fuel must be >= 0.\n");
+  else if (u > f) print ("Sorry, you have not got that much fuel!\n");
+  return ((u < 0) || (u > f));
+}  
+
+int boost (int f) {
+  if (f > 0) {
+      do {
+        print ("How much fuel will you use? ");
+        u = enter ();
+      } while (boost_not_ok (u, f));
+  } else u = 0;
+  return (u);
+}
+     
+void calculate (int g, int u, int h, int v, int f) {
+  h -= v; f -= u;
+  v = (((v + g) * 10) - (u * 2)) / 10;
+}
+
+void report (int v) {
+  print (v > 4 ? "You have crashed." : "Congratulations! This was a very good landing.");
+  print ("\n\n");
+}
+
+void lander () {
+  do {
+    ready ();
+    g = 2; v = 70; h = 1000; f = 500;  // G-force, velocity, height, fuel    
+    
+    while (h > 0) {                    // as long as we have height
+      meter (v, h, f);                 // show the readings
+      u = boost (f);                   // give a boost
+      calculate (g, u, &h, &v, &f);    // calculate the next values
+    }
+    
+    h = h > 0 ? h : 0;                 // we don't make big dents
+    meter (v, h, f); report (v);       // final reading and evaluation
+ 
+    print ("Do you want to play again? (0 = no, 1 = yes) "); a = enter ();
+    print ("\n");
+  } while (a == 1);
+  print ("Have a nice day.\n");
+}
+
+lander ();

@@ -1,0 +1,192 @@
+# 1) call function by reference
+
+int foo(int x, int y)
+{
+  return x * 10 + y;
+}
+a = call(foo, 4, 2);
+
+if (a != 42) exit(1);
+
+
+# 2) call function by reference and argument array
+
+forced int foo()
+{
+  for (i = 0; i < argc; i++) {
+    sum += argv[i];
+  }
+  return sum;
+}
+a = call_array(foo, mkarray(1, 2, 3));
+
+if (a != 6) exit(2);
+
+
+# 3) prototype of function
+
+int foo(forced int x, string y)
+{
+  return x + (int) y;
+}
+a = prototype(foo);
+ret  = a.ret.type == "int" && a.ret.force == false;
+arg1 = a.args[0].type == "int" && a.args[0].force == true;
+arg2 = a.args[1].type == "string" && a.args[1].force == false;
+
+if ((int) a != 2 || (int) a.args != 2 || !ret || !arg1 || !arg2) exit(3);
+
+
+# 4) map on empty array
+
+x = map(type_of, mkarray());
+
+if (!is_array(x) || (int) x != 0) exit(4);
+
+
+# 5) map on non-empty array
+
+x = map(type_of, mkarray(12, 2.0));
+
+if ((int) x != 2 || x[0] != "int" || x[1] != "float") exit(5);
+
+
+# 6) filter on empty array
+
+x = filter(is_int, mkarray());
+
+if (!is_array(x) || (int) x != 0) exit(6);
+
+
+# 7) filter on non-empty array
+
+x = filter(is_int, mkarray(2.0, 12));
+
+if ((int) x != 1 || x[0] != 12) exit(7);
+
+
+# 8) foldl on empty array
+
+float div(float x, float y)
+{
+  return x / y;
+}
+x = foldl(div, 10.0, mkarray());
+
+if (x != 10.0) exit(8);
+
+
+# 9) foldl on non-empty array
+
+float div(float x, float y)
+{
+  return x / y;
+}
+x = foldl(div, 10.0, mkarray(5.0, 2.0));
+
+if (x != 1.0) exit(9);
+
+
+# 10) foldr on empty array
+
+float div(float x, float y)
+{
+  return x / y;
+}
+x = foldr(div, mkarray(), 10.0);
+
+if (x != 10.0) exit(10);
+
+
+# 11) foldr on non-empty array
+
+float div(float x, float y)
+{
+  return x / y;
+}
+x = foldr(div, mkarray(5.0, 2.0), 10.0);
+
+if (x != 25.0) exit(11);
+
+
+# 12) method call with given struct context
+
+int geti()
+{
+  return this.i + argc;
+}
+template foo
+{
+  i = 40;
+}
+a = new foo();
+b = call_method(geti, a, 1, 2);
+
+if (b != 42) exit(12);
+
+
+# 13) method call with given struct context and argument array
+
+int geti()
+{
+  return this.i + argc;
+}
+template foo
+{
+  i = 40;
+}
+a = new foo();
+b = call_method_array(geti, a, mkarray(1, 2));
+
+if (b != 42) exit(13);
+
+
+# 14) check for builtin function
+
+void foo()
+{
+}
+a = is_builtin(print);
+b = is_builtin(foo);
+
+if (a != true || b != false) exit(14);
+
+
+# 15) check for user-defined function
+
+void foo()
+{
+}
+a = is_userdef(print);
+b = is_userdef(foo);
+
+if (a != false || b != true) exit(15);
+
+
+# 16) take elements from array by predicate
+
+a = mkarray(1, 2, "foo");
+b = take_while(is_int, a);
+
+if ((int) b != 2 || b[0] != 1 || b[1] != 2) exit(16);
+
+
+# 17) drop elements from array by predicate
+
+a = mkarray(1, 2, "foo");
+b = drop_while(is_int, a);
+
+if ((int) b != 1 || b[0] != "foo") exit(17);
+
+
+# 18) map with extra argument
+
+f = \ (x, y) { return x < y; };
+a = mkarray( 10 );
+b = map(f, a, 12);
+c = map(f, a, 8);
+
+if (b[0] != true || c[0] != false) exit(18);
+
+
+print("18 subtests ");

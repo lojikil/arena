@@ -1,0 +1,77 @@
+// TicTacToe - Copyright 1997, 2006 J.L. Bezemer
+// You can redistribute this file and/or modify it under
+// the terms of the GNU General Public License
+
+int enter () {
+  return ((int) (fgets (stdin)));
+}
+
+convert = mkarray (0, 1, 2, 5, 8, 7, 6, 3, 4);
+board   = mkarray (0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+void box (int x) {
+  if (board [x]) print (board [x] == 1 ? "X " : "0 ");
+  else print ("  ");
+}
+
+void display () {
+  print ("\n");
+  for (x = 0; x < 9; x++) {
+     if (x) print (x % 3 ? "| " : "\n---------\n");
+     box (x);
+   }
+   print ("\n");
+}
+
+void play (int m, int p) {
+  if (m < 1) m = 1; if (m > 9) m = 9;  // clip values
+  c = convert [m - 1];                 // get array address
+  if (! board [c]) board [c] = p;      // set, if not occupied
+}
+
+void X (int c) {
+  play (c, 1);
+  display ();
+}
+
+void O (int p) {
+  play (p, 2);
+}
+
+int fnM (int a, int b) {
+  return ((((a + b) - 1) % 8) + 1);
+}
+
+int Player (int c) {
+  X (c);                               // computers move
+  print (" \n123\n894\n765 Your move: "); p = enter ();
+  O (p); return (p);                   // my move
+}
+
+void EndGame (int m) {
+    X (m);
+    print ("\nYou lose.\n");
+    exit (0);
+}
+
+void FirstMove (int f, int c) {
+  if ((f % 2) == 0) EndGame (fnM (7, c));
+}
+
+int Moves (int m, int p) {
+  c = fnM (m, p); p = Player (c); t = fnM (4, c);
+  if (p != t) EndGame (t);
+  return (c);
+}
+
+void TicTacToe () {
+  f = Player (9);
+  c = Moves (1, f);
+  c = Moves (2, c);
+  FirstMove (f, c);
+  c = Moves (3, c);
+  
+  X (fnM (6, c)); print ("\nIt's a draw.\n");
+}
+
+TicTacToe ();

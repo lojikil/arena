@@ -1,0 +1,47 @@
+DEPSRC  = expr_memory.c expr_parse.c expr_stack.c expr_dump.c stmt_list.c \
+          stmt_memory.c stmt_parse.c stmt_stack.c stmt_dump.c
+SOURCES = $(DEPSRC) parse_file.c
+OBJECTS = expr_memory.o expr_parse.o expr_stack.o expr_dump.o stmt_list.o \
+          stmt_memory.o stmt_parse.o stmt_stack.o stmt_dump.o parse_file.o \
+          lex.yy.o y.tab.o
+LIB = libparser.a
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+YACC = bison -y
+LEX = flex
+
+all: $(LIB)
+
+$(LIB): $(OBJECTS)
+	ar -crs $@ $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+y.tab.h y.tab.c: grammar.y
+	$(YACC) -d grammar.y
+
+lex.yy.c: lexer.l
+	$(LEX) lexer.l
+
+clean:
+	rm -f $(OBJECTS)
+	rm -f $(LIB)
+
+distclean: clean
+	rm -f Makefile
+
+realclean: distclean
+	rm -f y.tab.h y.tab.c lex.yy.c
+
+depend: $(DEPSRC)
+	$(CC) $(CFLAGS) -MM $(DEPSRC) >> Makefile
+
+y.tab.o: y.tab.c parser.h
+
+lex.yy.o: lex.yy.c y.tab.h parser.h
+
+parse_file.o: parse_file.c parser.h y.tab.h
+
+# automatically generated dependencies follow

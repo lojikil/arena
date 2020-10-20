@@ -1,0 +1,57 @@
+# 1) boolean not of true
+
+a = true;
+b = !a;
+
+if (!a || b) exit(1);
+
+
+# 2) boolean not of false
+
+a = false;
+b = !a;
+
+if (a || !b) exit(2);
+
+
+# 3) unary minus of int
+
+a = 42;
+b = - a;
+
+if (a != 42 || b != -42) exit(3);
+
+
+# 4) unary minus of float
+
+a = 22.0;
+b = - a;
+
+if (a != 22.0 || b != -22.0) exit(4);
+
+
+# 5) post-increment of int
+
+a = 5;
+b = ++a;
+
+if (a != 6 || b != 6) exit(5);
+
+
+# 6) post-increment of float
+
+a = 5;
+b = --a;
+
+
+# 7) bit negation of int
+
+if (a != 4 || b != 4) exit(6);
+
+a = -1;
+b = ~a;
+
+if (a != -1 || b != 0) exit(7);
+
+
+print("7 subtests ");

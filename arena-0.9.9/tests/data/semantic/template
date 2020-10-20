@@ -1,0 +1,271 @@
+# 1) template definition
+
+template foo
+{
+  i;
+}
+
+
+# 2) create instance without constructor
+
+template foo
+{
+  i = 42;
+}
+a = new foo();
+
+if (!is_struct(a) || a.__template != "foo" || a.i != 42) exit(2);
+
+
+# 3) create instance with constructor
+
+template foo
+{
+  void foo()
+  {
+    b = 12;
+    global("b");
+  }
+}
+a = new foo();
+
+if (!is_struct(a) || a.__template != "foo" || b != 12) exit(3);
+
+
+# 4) call method static
+
+template foo
+{
+  int sense()
+  {
+    return 42;
+  }
+}
+a = foo::sense();
+
+if (a != 42) exit(4);
+
+
+# 5) call method dynamic
+
+template foo
+{
+  int sense()
+  {
+    return 42;
+  }
+}
+a = new foo();
+b = a.sense();
+
+if (b != 42) exit(5);
+
+
+# 6) method accessing struct field
+
+template foo
+{
+  i = 42;
+
+  int geti()
+  {
+    return this.i;
+  }
+}
+a = new foo();
+b = a.geti();
+
+if (b != 42) exit(6);
+
+
+# 7) method changing struct field
+
+template foo
+{
+  i = 1;
+
+  void double()
+  {
+    this.i *= 2;
+  }
+}
+a = new foo();
+a.double();
+
+if (a.i != 2) exit(7);
+
+
+# 8) constructor calling other methods
+
+template foo
+{
+  i = 1;
+
+  void double()
+  {
+    this.i *= 2;
+  }
+
+  void foo()
+  {
+    this.double();
+    this.double();
+  }
+}
+a = new foo();
+
+if (a.i != 4) exit(8);
+
+
+# 9) method calling other methods
+
+template foo
+{
+  i = 1;
+
+  void double()
+  {
+    this.i *= 2;
+  }
+
+  void quadruple()
+  {
+    this.double();
+    this.double();
+  }
+}
+a = new foo();
+a.quadruple();
+
+if (a.i != 4) exit(9);
+
+
+# 10) declaration with inheritance
+
+template foo
+{
+  i = 1;
+}
+template bar extends foo
+{
+  j = 2;
+}
+
+
+# 11) inheritance
+
+template foo
+{
+  i = 1;
+
+  void double()
+  {
+    this.i *= 2;
+  }
+}
+template bar extends foo
+{
+  j = 0;
+
+  void quadruple()
+  {
+    this.double();
+    this.double();
+    ++this.j;
+  }
+}
+a = new bar();
+a.quadruple();
+
+if (a.i != 4 || a.j != 1) exit(11);
+
+
+# 12) inherited constructor
+
+template foo
+{
+  void foo()
+  {
+    this.i = 42;
+  }
+}
+template bar extends foo
+{
+  int geti()
+  {
+    return this.i;
+  }
+}
+a = new bar();
+b = a.geti();
+
+if (a.__template != "bar" || b != 42) exit(12);
+
+
+# 13) unused inherited constructor
+
+template foo
+{
+  void foo()
+  {
+    this.i = 42;
+  }
+}
+template bar extends foo
+{
+  void bar()
+  {
+    this.i = 100;
+  }
+  int geti()
+  {
+    return this.i;
+  }
+}
+a = new bar();
+b = a.geti();
+
+if (a.__template != "bar" || b != 100) exit(13);
+
+
+# 14) directly read static variables
+
+template foo
+{
+  x = 12;
+  int scale()
+  {
+    return 42;
+  }
+}
+a = foo::x;
+b = foo::scale;
+
+if (a != 12 || !is_fn(b)) exit(14);
+
+
+# 15) directly initialize method
+
+template foo
+{
+  x = type_of;
+}
+a = new foo();
+b = a.x(12);
+c = foo::x(12);
+
+if (b != "int" || c != "int") exit(15);
+
+
+# 16) use of template name as variable name
+
+template foo
+{
+  i = 42;
+}
+a = foo;
+
+if (a != ()) exit(16);
+
+
+print("16 subtests ");

@@ -1,0 +1,137 @@
+# 1) fopen for writing and write
+
+f = fopen(".tmp12345", "w+");
+w = fwrite(f, "foo");
+fclose(f);
+
+if (is_void(f) || !is_file_resource(f) || w != 3) exit(1);
+
+
+# 2) fopen and read
+
+f = fopen(".tmp12345", "r");
+r = fread(f, 1000);
+fclose(f);
+
+if (is_void(f) || r != "foo") exit(2);
+
+
+# 3) fopen for appending and write
+
+f = fopen(".tmp12345", "a+");
+w = fwrite(f, "bar");
+fclose(f);
+
+if (is_void(f) || w != 3) exit(3);
+
+
+# 4) open invalid name
+
+f = fopen("foo\0bar", "r");
+
+if (!is_void(f)) exit(4);
+
+
+# 5) read from appended file
+
+f = fopen(".tmp12345", "r");
+r = fread(f, 1000);
+
+if (r != "foobar") exit(5);
+
+
+# 6) fseek and ftell
+
+s = fseek(f, -2);
+t = ftell(f);
+p = fseek(f, 3);
+q = ftell(f);
+
+if (!p || q != 3 || !s || t != 4) exit(6);
+
+
+# 7) fread from new position
+
+r = fread(f, 1000);
+
+if (r != "bar") exit(7);
+
+
+# 8) check eof
+
+p = feof(f);
+
+if (!p) exit(8);
+
+
+# 9) clear status indicators
+
+clearerr(f);
+p = feof(f);
+q = ferror(f);
+fclose(f);
+
+if (p || q) exit(9);
+
+
+# 10) rename file
+
+p = rename(".tmp12345", ".tmp54321");
+
+if (!p) exit(10);
+
+
+# 11) try opening old name
+
+f = fopen(".tmp12345", "r");
+
+if (!is_void(f)) exit(11);
+
+
+# 12) try opening new name
+
+f = fopen(".tmp54321", "r");
+fclose(f);
+
+if (is_void(f)) exit(12);
+
+
+# 13) remove file
+
+p = remove(".tmp54321");
+
+if (!p) exit(13);
+
+
+# 14) try opening removed file
+
+f = fopen(".tmp54321", "r");
+
+if (!is_void(f)) exit(14);
+
+
+# 15) get character from file
+
+f = fopen(".tmp12345", "w+");
+fwrite(f, "foo");
+fseek(f, 0);
+c = fgetc(f);
+fclose(f);
+remove(".tmp12345");
+
+if (c != "f") exit(15);
+
+
+# 16) get line from file
+
+f = fopen(".tmp12345", "w+");
+fwrite(f, "foo\nbar\n");
+fseek(f, 0);
+c = fgets(f);
+fclose(f);
+remove(".tmp12345");
+
+if (c != "foo\n") exit(16);
+
+
+print("16 subtests ");

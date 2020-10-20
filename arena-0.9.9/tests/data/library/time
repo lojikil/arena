@@ -1,0 +1,84 @@
+# 1) get current time
+
+a = time();
+
+if (!is_int(a) || a == 0) exit(1);
+
+
+# 2) convert time to UTC time struct
+
+a = gmtime(time());
+
+if (!is_struct(a) || !is_field(a, "tm_sec")) exit(2);
+
+
+# 3) convert time to local time struct
+
+a = localtime(time());
+
+if (!is_struct(a) || !is_field(a, "tm_sec")) exit(3);
+
+
+# 4) get time back from time struct
+
+a = time();
+b = localtime(a);
+c = mktime(b);
+
+if (a != c) exit(4);
+
+
+# 5) adjust time by one second
+
+a = time();
+b = localtime(a);
+b.tm_sec += 1;
+c = mktime(b);
+d = c - a;
+
+if (d != 1) exit(5);
+
+
+# 6) adjust time by one minute
+
+a = time();
+b = localtime(a);
+b.tm_min += 1;
+c = mktime(b);
+d = c - a;
+
+if (d != 60) exit(6);
+
+
+# 7) adjust time by one hour
+
+a = time();
+b = localtime(a);
+b.tm_hour += 1;
+c = mktime(b);
+d = c - a;
+
+if (d != 3600) exit(7);
+
+
+# 8) adjust time by one day
+
+a = time();
+b = localtime(a);
+b.tm_mday += 1;
+c = mktime(b);
+d = c - a;
+
+if (d != 86400) exit(8);
+
+
+# 9) format time
+
+a = 0;
+b = gmtime(a);
+c = strftime("%Y-%m-%d %H:%M:%S", b);
+
+if (c != "1970-01-01 00:00:00") exit(9);
+
+
+print("9 subtests ");

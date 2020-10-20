@@ -1,0 +1,6 @@
+# 1) out of bounds array assignment
+
+a = mkarray(1,2);
+a[-10] = 12;
+
+if (a[0] != 12) exit(1);

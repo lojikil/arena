@@ -1,0 +1,87 @@
+// Copyright BASIC version - Creative Computing, Morristown, New Jersey
+// Copyright Arena version - 2006 J.L. Bezemer
+
+int enter () {
+  return ((int) (fgets (stdin)));
+}
+
+int start (int m) {
+  print ("This is a game called '23 matches'.\n\n");
+  print ("When it is your turn, you may take one, two, or three\n");
+  print ("matches. The object of the game is not to have to take\n");
+  print ("the last match.\n\n");
+  
+  print ("Let's flip a coin to see who goes first.\n");
+  print ("If it comes up heads, I will win the toss.\n\n");
+
+  if (rand (0, RAND_MAX) & 1) {
+    print ("Heads! I win! Ha! Ha!\n");
+    print ("Prepare to lose, meatball-nose!!\n");
+    print ("I take 2 matches\n");
+    m -= 2;
+  } else {
+    print ("Tails! You go first.\n");
+  }
+  return (m);
+}
+
+bool move_not_ok (int a, int m) {
+  if ((a > m) || (a > 3) || (a < 1)) {
+     print ("Very funny! Dummy!\n"); 
+     print ("Do you want to play or goof around?\n");
+  }
+  return ((a > m) || (a > 3) || (a < 1));
+}
+
+int user_moves (int m) {
+  printf ("The number of matches is now %d\n", m);
+  print ("Your turn -- you may take 1, 2 or 3 matches.\n");
+
+  do {
+    print ("How many do you wish to remove? "); a = enter (); 
+  } while (move_not_ok (a, m));
+
+  printf ("There are now %d matches remaining.\n", m - a);
+  return (a);
+}
+
+bool user_wins (int m) {
+  if (m < 2) {
+    print ("\nYou won, floppy ears!\n");
+    print ("Think you're pretty smart!\n"); 
+    print ("Let's play again and I'll blow your shoes off!!\n");
+  }
+  return (m < 2);
+}
+
+int computer_moves (int m, int u) {
+  c = m < 5 ? m - 1 : 4 - u;
+  printf ("\nMy turn! I remove %d matches.\n", c);
+  return (c);
+}
+
+bool computer_wins (int m) {
+  if (m < 2) { 
+    print ("You poor boob! You took the last match! I gotcha!!\n");
+    print ("Ha! Ha! I beat you!!!\n");
+    print ("Goodbye loser!\n");
+  }
+  return (m < 2);
+}
+
+void game (int m) {
+  for (;;) {
+    u = user_moves (m); m -= u;
+    if (user_wins (m)) exit (0); 
+
+    c = computer_moves (m, u); m -= c;
+    if (computer_wins (m)) exit (0);
+  }
+}
+
+void matches (int m) {
+  m = start (m);
+  game (m);
+}
+
+matches (23);

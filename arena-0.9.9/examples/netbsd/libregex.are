@@ -1,0 +1,93 @@
+// script wrapper for regex routines from libc - see regex(3)
+
+/* $NetBSD$ */
+
+/*
+ * Copyright © 2006 Alistair Crooks.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// regcomp flags
+REG_BASIC = 0;
+REG_EXTENDED = 1;
+
+// regexec flags
+REG_NOTBOL = 0001;
+REG_MATCH = 0;
+REG_NOMATCH = 1;
+
+// regexp class
+template regexp {
+	lib;		// handle to dynamic library's .so
+	regex;		// compiled regular expression
+	result;		// return code from regexec
+
+	// regcomp the pattern and store it in regex
+	void regexp(string pattern)
+	{
+		// size of regex_t structure (worst case for LP64)
+		REGEX_T_SIZE = 24;
+
+		if (!dyn_supported()) {
+			throw "dynamic loading not supported";
+		}
+		this.lib = dyn_open("libc.so");
+		if (!is_resource(this.lib)) {
+			throw "libc not found";
+		}
+		this.regex = malloc(REGEX_T_SIZE);
+		if (!is_resource(this.regex)) {
+			throw "out of memory";
+		}
+		err = dyn_call_int(this.lib, "regcomp", this.regex, pattern, REG_EXTENDED);
+		if (err != 0) {
+			throw "regcomp call failed";
+		}
+	}
+
+	// search the string `s' for the compiled regular expression
+	array regexec(string s, int flags)
+	{
+		REGOFF_T_SIZE = 8;
+
+		matches = calloc(REGOFF_T_SIZE + REGOFF_T_SIZE, 10);
+		if (!is_resource(matches)) {
+			throw "out of memory";
+		}
+
+		this.result = dyn_call_int(this.lib, "regexec", this.regex, s, 10, matches, flags);
+		if (this.result != REG_MATCH && this.result != REG_NOMATCH) {
+			throw strcat("regexec error ", this.result);
+		}
+
+		data = mkarray();
+		for (i = 0; i < 10; i++) {
+			data[i * 2] = mgetint(matches, i * (REGOFF_T_SIZE + REGOFF_T_SIZE));
+			data[(i * 2) + 1] = mgetint(matches, i * (REGOFF_T_SIZE + REGOFF_T_SIZE) + REGOFF_T_SIZE);
+		}
+		return data;
+	}
+}

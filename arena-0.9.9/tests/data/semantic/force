@@ -1,0 +1,26 @@
+# 1) forced argument type cast
+
+string foo(forced int x)
+{
+  return type_of(x);
+}
+
+a = foo(12);
+b = foo("bla");
+
+if (a != "int" || b != "int") exit(1);
+
+
+# 2) forced return type cast
+
+forced int foo(string x)
+{
+  return strcat(x, x);
+}
+
+a = foo("12");
+
+if (a != 1212) exit(2);
+
+
+print("2 subtests ");

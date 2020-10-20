@@ -1,0 +1,10 @@
+# 1) type mismatch in function argument
+
+int foo(int x)
+{
+  return x + 1;
+}
+
+a = foo(mkarray(1,2));
+
+if (a != 3) exit(1);

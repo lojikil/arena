@@ -1,0 +1,87 @@
+// script wrapper for stat(2) system call
+
+/* $NetBSD$ */
+
+/*
+ * Copyright © 2006 Alistair Crooks.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+// stat class
+template stat {
+	lib;		// handle to dynamic C library's .so
+	stathandle;	// stat C structure handle
+	result;		// arena struct
+
+	// stat the file name
+	void stat(string f)
+	{
+		// size of C's struct stat
+		STAT_SIZE = 128;	// 100 is strict size??
+
+		if (!dyn_supported()) {
+			throw "dynamic loading not supported";
+		}
+		this.lib = dyn_open("libc.so");
+		if (!is_resource(this.lib)) {
+			throw "libc not found";
+		}
+		this.stathandle = malloc(STAT_SIZE);
+		if (!is_resource(this.stathandle)) {
+			throw "out of memory";
+		}
+		err = dyn_call_int(this.lib, "__stat30", f, this.stathandle); // stat30?
+		if (err != 0) {
+			throw "stat call failed";
+		}
+		// fill in the results
+		this.result = mkstruct(
+			"name", f,
+			"st_dev", mgetint(this.stathandle, 0),
+			"st_mode", mgetint(this.stathandle, 4),
+			"st_ino", mgetint(this.stathandle, 8),
+			"st_nlink", mgetint(this.stathandle, 16),
+			"st_uid", mgetint(this.stathandle, 20),
+			"st_gid", mgetint(this.stathandle, 24),
+			"st_rdev", mgetint(this.stathandle, 28),
+			"st_atime", mgetint(this.stathandle, 32),
+			"st_mtime", mgetint(this.stathandle, 40),
+			"st_ctime", mgetint(this.stathandle, 48),
+			"st_birthtime", mgetint(this.stathandle, 56),
+			"st_size", mgetint(this.stathandle, 64),
+			"st_blks", mgetint(this.stathandle, 72),
+			"st_blksize", mgetint(this.stathandle, 80),
+			"st_flags", mgetint(this.stathandle, 88),
+			"st_gen", mgetint(this.stathandle, 92));
+	}
+
+	// destructor for this, otherwise handle will still be around
+	void destructor()
+	{
+		//free(this.stathandle);
+	}
+}

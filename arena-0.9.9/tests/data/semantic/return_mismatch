@@ -1,0 +1,9 @@
+# 1) automatic casting of return value
+
+string foo(int x)
+{
+  return x;
+}
+a = foo(12);
+
+if (a != "12" || a == 12) exit(1);

@@ -1,0 +1,651 @@
+// Copyright 1983 by A. Clapman - Design and original ZX BASIC programming
+// Copyright 1996,2006 by H. Bezemer - Structured design and Arena programming
+
+// Permission is granted by the author to use and distribute this software
+// provided these copyright notices are preserved.
+
+// This file is part of the Arena interpreter package
+
+// Extract from a time-travellers diary discovered in the pyramid of
+// Ikhotep, pharoah of the ninth dynasty, on the planet Sirius B,
+// in the dog star system.
+
+// "I have been attempting to discover the secret of the pyramid for some
+// months now. It is the only way I will be able to escape this barren
+// planet. After my time-machine was destroyed by the warrior tribe I
+// found my way to this dusty monument after consulting a man they regard
+// as a wizard. He is in fact a fellow traveller in time and space exiled
+// by the Time Lords to this lost planet. He has decided to stay and
+// persue his black arts amoung the warrior folk. But he has told me of
+// a time gate which will lead me back to the main time lanes and freedom.
+// He said the gate was hidden within the pyramid. I have uncovered some
+// clues but not enough to lead me to the final solution. I can only keep
+// trying. But I feel that, for me at least, time is running out."
+
+// The diary was found next to a small pile of oddly shaped bones deep
+// within the heart of the pyramid.
+
+// Can you find your way out of the pyramid and off the barren planet?
+// You will find several rooms within the pyramid and several objects
+// within those rooms which must be collected to solve the riddle of the
+// ancient monument. The program uses the standard two word entry system
+// and adjectives should not be entered. To move simply type in the
+// direction you want to go, for example 'N' or 'north'. Other useful
+// words are TAKE, GET, THROW, DROP, INVENTORY.
+
+cmd = "";                              // command line
+
+todo = 0;                              // is still alive
+done = 1;                              // is already dead
+seen = 2;                              // dragon has seen you
+
+is_dragon = todo;                      // is dragon alive
+is_tree   = todo;                      // is tree uncut
+is_door   = todo;                      // is the door intact
+is_wall   = todo;                      // is the wall closed
+is_helmet = todo;                      // is the helmet off
+is_power  = todo;                      // is the power off
+
+watch      = 0;                        // objects in grid
+dragon     = 1;
+generator  = 2;
+tree       = 3;
+slab       = 4;
+door       = 5;
+saw        = 6;
+mirror     = 7;
+reflector  = 8;
+coin       = 9;
+knife      = 10;
+dagger     = 11;
+helmet     = 12;
+axe        = 13;
+
+Nobjects   = 14;                       // number of objects in grid
+
+objects = mkstruct (
+  "watch",     watch ,
+  "dragon",    dragon ,
+  "generator", generator ,
+  "tree",      tree ,
+  "slab",      slab ,
+  "door",      door ,
+  "saw",       saw ,
+  "mirror",    mirror ,
+  "reflector", reflector ,
+  "coin",      coin ,
+  "knife",     knife ,
+  "dagger",    dagger ,
+  "helmet",    helmet ,
+  "axe",       axe
+);
+
+stays = 0;                             // cannot be moved
+moves = 1;                             // can be moved
+
+attributes = mkarray (                 // map attributes to objects
+  "\twrist watch\n",                   moves ,
+  "\tmagenta, firebreathing dragon\n", stays ,
+  "\tmobile electricity generator\n",  moves ,
+  "\tCanadian Redwood tree\n",         stays ,
+  "\tgranite slab\n",                  moves ,
+  "\tthick wooden door\n",             stays ,
+  "\telectric saw\n",                  moves ,
+  "\tpurple mirror\n",                 moves ,
+  "\tgreen reflector\n",               moves ,
+  "\t10 pence coin\n",                 moves ,
+  "\tbutter knife\n",                  moves ,
+  "\trazor sharp dagger\n",            moves ,
+  "\tsafety helmet\n",                 moves ,
+  "\tsharp axe\n",                     moves
+);
+
+_Exit_       = _Person_ = -1;          // locations
+_NoWhere_    = 0;
+_RoadWE_     = 1;
+_RoadBend_   = 2;
+_ShackW_     = 3;
+_ShackE_     = 4;
+_RoadNS_     = 5;
+_RoadN_      = 6;
+_Pyramid_    = 7;
+_Embalm_     = 8;
+_Recreation_ = 9;
+_ANKH_       = 10;
+_Triangular_ = 11;
+_Oblong_     = 12;
+_Funeral_    = 13;
+_Treasure_   = 14;
+_Cave_       = 15;
+_Garden_     = 16;
+
+locations = mkarray (                 // map locations to directions
+  "a road leading west and east. Two things are pointing to the west.\n",
+  _NoWhere_ , _NoWhere_ , _Exit_ , _RoadBend_ ,
+  "a bend in the road.\n",
+  _NoWhere_ , _RoadNS_ , _RoadWE_ , _NoWhere_ ,
+  "a small dark shack.\n",
+  _NoWhere_ , _NoWhere_ , _NoWhere_ , _RoadNS_ ,
+  "a small dark shack.\n",
+  _NoWhere_ , _NoWhere_ , _RoadNS_ , _Cave_ ,
+  "a road leading north and south. There are shacks either side.\n",
+  _RoadBend_ , _RoadN_ , _ShackW_ , _ShackE_ ,
+  "a road leading north. There is a pyramid south.\n",
+  _RoadNS_ , _Pyramid_ , _NoWhere_ , _NoWhere_ ,
+  "the entrance hall of the pyramid. There is a road north.\n",
+  _RoadN_ , _Oblong_ , _Embalm_ , _Recreation_ ,
+  "the embalming room.\n",
+  _NoWhere_ , _NoWhere_ , _ANKH_ , _Pyramid_ ,
+  "the recreation room. An exit to the garden is east.\n",
+  _NoWhere_ , _Funeral_ , _Pyramid_ , _Garden_ ,
+  "the room of ANKH.\n",
+  _NoWhere_ , _NoWhere_ , _NoWhere_ , _Embalm_ ,
+  "a small triangular room.\n",
+  _NoWhere_ , _NoWhere_ , _NoWhere_ , _Oblong_ ,
+  "a long oblong room.\n",
+  _Pyramid_ , _Treasure_ , _Triangular_ , _NoWhere_ ,
+  "the funeral parlour.\n",
+  _Recreation_ , _NoWhere_ , _NoWhere_ , _NoWhere_ ,
+  "the treasure room. It has been looted. There is a smashed door north.\n",
+  _Oblong_ , _NoWhere_ , _NoWhere_ , _NoWhere_ ,
+  "a small circular cave.\n",
+  _NoWhere_ , _NoWhere_ , _ShackE_ , _NoWhere_ ,
+  "a small garden.\n",
+  _NoWhere_ , _NoWhere_ , _Recreation_ , _NoWhere_
+);
+
+map = mkarray(
+   _ShackW_ ,                          // watch in west shack
+   _ShackE_ ,                          // dragon in east shack
+   _RoadBend_ ,                        // generator in bend of the road
+   _Garden_ ,                          // tree in the garden
+   _Funeral_ ,                         // slab in funeral parlor
+   _Oblong_ ,                          // door in oblong room
+   _Triangular_ ,                      // saw in triangular room
+   _ANKH_ ,                            // mirror in room of ANKH
+   _Cave_ ,                            // reflector in cave
+   _Treasure_ ,                        // coin in treasure room
+   _RoadNS_ ,                          // knife on north/south road
+   _NoWhere_ ,                         // dagger is nowhere
+   _Pyramid_ ,                         // helmet in pyramid
+   _NoWhere_                           // axe is nowhere
+);
+
+void CANNOT () {                       // default warning
+  print ("YOU CAN'T, IDIOT!!\n\n");
+}
+
+void DEAD () {                         // exit game
+  print ("YOU'RE DEAD!!\n\n");
+  exit (0);
+}
+
+void IDUNNO (string a) {               // I don't know!
+  printf ("I don't know what a %s is.\n\n", a);
+}
+
+void OUTSIDE () {                      // not here!
+  print ("It isn't here!!\n\n");
+}
+
+void MISSING () {
+  print ("You aren't carrying it, stupid!!\n\n");
+}
+
+north = _NoWhere_;
+south = _NoWhere_;
+west  = _NoWhere_;
+east  = _NoWhere_;
+
+where = _RoadBend_;                    // room where you are
+
+string verb () {
+  x = strchr (cmd, " ");
+  return (x == () ? cmd : left (cmd, x));
+}
+
+string noun () {
+  x = strrchr (cmd, " ");
+  return (x == () ? cmd : trim (right (cmd, strlen (cmd) - x)));
+}
+
+void execute (string command) {
+  action = struct_get (actions, command);
+
+  if (action == ()) printf ("I don't know how to %s.\n\n", command);
+  else action ();
+}
+
+int room () {
+  return ((where - 1) * 5);
+}
+                                       // keep locked until task is done
+int noentry (int done, int here, int dir) {
+  if (where == here) return (done ? dir : _NoWhere_);
+  else return (dir);  
+}
+
+void directions (int here) {
+  north = locations [here + 1];
+  south = locations [here + 2];
+  west  = locations [here + 3];
+  east  = locations [here + 4];
+  global ("north", "south", "west", "east");
+}
+
+void is_north () {                     // going north ?
+  if (north) print ("North\t");
+}
+
+void is_south () {                     // going south ?
+  south = noentry (is_door, _Oblong_, south);
+  if (south) print ("South\t");
+  global ("south");
+}
+
+void is_west () {                      // going west ?
+  west = noentry (is_wall, _Embalm_, west);
+  if (west) print ("West\t");
+  global ("west");
+}
+
+void is_east () {                      // going east ?
+  east = noentry (is_dragon, _ShackE_, east);
+  if (east) print ("East\t");
+  global ("east");
+}
+
+void is_lastroom () {
+  if (where == _Exit_) {               // make sure we're there
+    print ("LASER BOLTS FLASH OUT FROM THE KILLO-ZAP GUNS FIXED TO THE ROAD!\n");
+                                       // can't we reflect anything?
+    if ((map [mirror] != _Person_) && (map [reflector] != _Person_)) {
+      print ("FRIZZLE!!\n"); DEAD ();
+    }
+                                       // are we missing a reflector
+    if ((map [reflector] != _Person_)) {
+      print ("THE LEFT RAY IS REFLECTED BY THE MIRROR. THE RIGHT ONE ISN'T!!\n"); DEAD ();
+    }
+                                       // are we missing a mirror
+    if ((map [mirror] != _Person_)) {
+      print ("THE RIGHT RAY IS REFLECTED BY THE REFLECTOR. THE LEFT ONE ISN'T!!\n"); DEAD ();
+    }
+                                       // we got them both!
+    print ("BOTH THE RAYS ARE REFLECTED BY THE MIRROR AND THE REFLECTOR!!\n");
+    print ("YOU HAVE MANAGED TO ESCAPE ALIVE!!\n\n");
+    exit (0);
+  }
+}
+
+void contents () {
+  t = 0;                               // show the contents of a room
+  for (x = 0; x < Nobjects; x++)       // loop through the map for a match
+      if (map [x] == where) {
+         t++; print (attributes [x * 2]);
+      }
+      
+  if (t == 0) print ("\tNone\n");      // nothing in this room..
+                                       // all exceptions
+  if ((where != _ShackE_) && (is_dragon == seen))
+     is_dragon = todo;                 // if we aren't in the shack but the 
+                                       // dragon has seen us we make him forget
+  if ((where == _ShackE_) && (is_dragon == seen)) {
+     print ("\nThe dragon doesn't like you so he kills you.\n"); DEAD ();
+  }
+
+  if ((where == _ShackE_) && (is_dragon == todo)) {
+     print ("\nThe dragon blocks a hole in the EAST wall.\n");
+     is_dragon = seen;
+  }
+
+  if ((where == _ShackE_) && (is_dragon == done))
+     print ("\nThe dragon is dead.\n");
+
+  if ((where == _Garden_) && (is_tree == done))
+     print ("\nThe tree is lying on the ground\n");
+
+  if ((where == _Garden_) && (is_tree == todo))    
+     print ("\nThere is something glistening at the top of the tree.\n");
+
+  if ((where == _Embalm_) && (is_wall == todo))
+     print ("\nThere is a small slot on the west wall.\n");
+
+  if ((where == _Oblong_) && (is_door == done))
+     print ("\nThe door is smashed down\n");
+    
+  global ("is_dragon");
+}
+
+void showroom () {                     // describe a room
+  is_lastroom ();                      // are we in the last room?
+  print ("You are at ");
+  print (locations [room ()]);
+  directions (room ());
+  print ("Directions you may proceed in:\n\t");
+  is_north (); is_south ();
+  is_west (); is_east ();              // show exits and items
+  print ("\n\nThings of interest here:\n"); 
+  contents ();
+}
+
+void do_move () {
+  execute (noun ());
+}
+
+void do_go (int x) {
+  if (x) where = x; else CANNOT ();
+  global ("where");
+}
+
+void go_north () {                     // go north
+  do_go (north);
+}
+
+void go_south () {                     // go south
+  do_go (south);
+}
+
+void go_west () {                      // go west
+  do_go (west);
+}
+
+void go_east () {                      // go east
+  do_go (east);
+}
+
+void do_take () {                      // take an object
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+     if (map [object] == _Person_) {   // do we already have it?
+        print ("YOU ARE ALREADY CARRYING IT!!\n\n"); return;
+     }
+                                       // do we have a watch?     
+     if ((object != watch) && (map [watch] != _Person_)) {
+        print ("YOU HAVEN'T GOT ANYTHING TO CARRY IT IN!!\n\n"); return;
+     }
+                                       // is it here?
+     if (map [object] != where) {
+        OUTSIDE (); return;
+     }
+                                       // can we move it?
+     if (attributes [(object * 2) + 1] == stays) {
+        CANNOT (); return;
+     }
+                                       // zoom it in your watch
+     print (object == watch ?
+           "YOU STRAP IT ON YOUR WRIST.\n\n" :
+           "IT ZOOMS SAFELY INTO YOUR WATCH!\n\n");
+                                       // now you carry it
+     map [object] = _Person_; global ("map");
+  }
+}
+
+void do_drop () {                      // drop object
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if (map [object] != _Person_) MISSING ();
+    else {
+      map [object] = where;
+      if (object == helmet) is_helmet = todo;
+      global ("map", "is_helmet");
+    }
+  }
+}
+
+void do_saw () {                       // saw tree
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if ((object != tree) || (is_tree == done) || 
+       (map [generator] != _Person_) || (map [saw] != _Person_)) {
+       CANNOT (); return;              // saw a tree or is it already cut?
+    }                                  // do we have a generator and a saw?
+
+    if (where != _Garden_) {           // are we in the garden?
+       OUTSIDE (); return;
+    }
+    
+    if (is_power == todo) {            // do we have power?
+       print (" The saw won't work without electricity!!\n\n"); return;
+    }
+
+    if (is_helmet == todo) {           // are we wearing a helmet?
+      print ("The tree falls on your unprotected head. Crunch.\n\n"); 
+      DEAD ();
+    }
+
+    is_tree = done;                    // now cut the tree
+    print ("The tree falls down on your safety helmet.\n");
+    print ("An axe falls out of the top of the tree.\n\n");
+    map [axe] = where;                 // and show the axe
+    global ("map", "is_tree");
+  }
+}
+
+void do_smash () {                     // smash door
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if ((object != door) || (map [axe] != _Person_) || (is_door == done)) {
+       CANNOT (); return;              // do we smash a door?  
+    }                                  // do we have an axe?
+                                       // is the door smashed?
+    if (where != _Oblong_) {           // are we in the oblong room?
+       OUTSIDE (); return;
+    }
+
+    print ("Chop chop smash smash.. The door has been smashed down.\n\n");
+    is_door = done; global ("is_door");
+  }                                    // now smash the door
+}
+
+void do_wear () {                      // wear helmet
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if (object != helmet) {
+       CANNOT (); return;              // want to wear a helmet? 
+    }
+
+    if (map [helmet] != _Person_) {    // do we have a helmet?
+       MISSING (); return;
+    }
+    
+    is_helmet = done; global ("is_helmet");
+  }                                    // now put on the helmet
+}
+
+void do_connect () {                   // connect generator
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if ((object != generator) && (object != saw)) {
+       CANNOT (); return;              // do we connect a generator 
+    }                                  // or a saw?
+
+    if (map [object] != _Person_) {    // do we have it?
+       MISSING (); return;
+    }
+
+    if ((map [saw] != _Person_) || (map [generator] != _Person_)) {
+       CANNOT (); return;              // do we miss anything?
+    }
+                                       // ok, power is on! 
+    is_power = done; global ("is_power");
+  }
+}
+
+void do_push () {                      // push wall
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if (object != coin) {
+       CANNOT (); return;              // do we insert a coin?
+    }
+
+    if (map [coin] != _Person_) {      // do we have it?
+       MISSING (); return;
+    }
+    
+    if (where != _Embalm_)             // are we in the embalming room?
+       print ("I can't see anywhere to insert it!!");
+    else {
+       map [coin] = _NoWhere_;         // coin disappears in slot
+       print ("The wall suddenly shakes and glides one side leaving a doorway west!!");
+       is_wall = done; global ("map", "is_wall");
+    }                                  // the wall is open!
+    print ("\n\n");
+  }
+}
+
+void do_file () {                      // file knife
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {
+    if (object != knife) {
+       CANNOT (); return;              // do we want to file a knife?
+    }    
+
+    if (map [knife] != _Person_) {
+       MISSING (); return;
+    }
+
+    if (map [slab] != _Person_) 
+       print ("You haven't got anything to sharpen it on!!");
+    else {
+       print ("The knife turns extra sharp!!");
+       map [knife]  = _NoWhere_;       // the knife turns into a dagger
+       map [dagger] = _Person_; global ("map");
+    }
+    print ("\n\n");
+  }
+}
+
+void do_kill () {                      // kill dragon
+  thing = noun ();
+  object = struct_get (objects, thing);
+
+  if (object == ()) IDUNNO (thing);
+  else {                              // do we want to kill a dragon?
+    if ((object != dragon) || (map [dagger] != _Person_)) {
+       CANNOT (); return;             // and do we have a dagger?
+    }
+
+    if (where != _ShackE_) {          // are we in the east shack?
+       OUTSIDE (); return;
+    }
+
+    if (is_dragon == done)             // is the dragon alive?
+       print ("The poor thing is already dead.");
+    else {
+      is_dragon = done; global ("is_dragon");               
+      print ("Squelch. The dagger sinks to the hilt in the dragon.\n");
+      print ("It's dead. Poor thing."); 
+    }                                  // now he is!
+    print ("\n\n");
+  }
+}
+
+void do_list () {                      // shows the inventory
+  print ("You are carrying:\n");
+  
+  t = 0;                               // show the contents of a room
+  for (x = 0; x < Nobjects; x++)       // loop through the map for a match
+      if (map [x] == _Person_) {
+         t++; print (attributes [x * 2]);
+      }
+      
+  if (t == 0) print ("\tNothing\n");   // nothing in this room..
+  print ("\n");
+}
+
+void do_die () {                       // end game quickly
+  print ("There is no easy way out of here!!\n");
+  print ("So you decide to commit suicide.\n");
+  DEAD ();
+}
+
+/*
+void do_flags () {                     // debugging code 
+  print ("Dragon: ",   is_dragon);
+  print ("\nTree:   ", is_tree);
+  print ("\nHelmet: ", is_helmet);
+  print ("\nPower:  ", is_power);
+  print ("\nDoor:   ", is_door);
+  print ("\nWall:   ", is_wall);
+  print ("\n\n");
+}
+*/
+
+actions = mkstruct (                   // map vocabulary to actions
+//  "flags",     do_flags ,
+  "go",        do_move ,
+  "move",      do_move ,
+  "run",       do_move ,
+  "walk",      do_move ,
+  "north",     go_north ,
+  "n",         go_north ,
+  "south",     go_south ,
+  "s",         go_south ,
+  "west",      go_west ,
+  "w",         go_west ,
+  "east",      go_east ,
+  "e",         go_east ,
+  "get",       do_take ,
+  "take",      do_take ,
+  "steal",     do_take ,
+  "drop",      do_drop ,
+  "throw",     do_drop ,
+  "leave",     do_drop ,
+  "saw",       do_saw ,
+  "cut",       do_saw ,
+  "fell",      do_saw ,
+  "chop",      do_smash ,
+  "smash",     do_smash ,
+  "axe",       do_smash ,
+  "wear",      do_wear ,
+  "connect",   do_connect ,
+  "insert",    do_push ,
+  "push",      do_push ,
+  "sharpen",   do_file ,
+  "file",      do_file ,
+  "kill",      do_kill ,
+  "stab",      do_kill ,
+  "knife",     do_kill ,
+  "invent",    do_list ,
+  "objects",   do_list ,
+  "inventory", do_list ,
+  "list",      do_list ,
+  "die",       do_die ,
+  "exit",      do_die ,
+  "quit",      do_die
+);
+
+void venture () {
+  for (;;) {
+    showroom ();
+    print ("\nCommand: ");
+    cmd = tolower (trim (fgets (stdin))); global ("cmd");
+    print ("\n"); execute (verb ()); 
+  }
+}
+
+venture ();

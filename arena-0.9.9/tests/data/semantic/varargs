@@ -1,0 +1,16 @@
+# 1) variable number of arguments
+
+int sum()
+{
+  buf = 0;
+  for (i = 0; i < argc; i++) {
+    buf += argv[i];
+  }
+  return buf;
+}
+
+a = sum(1);
+b = sum(1,2);
+c = sum(1,2,3);
+
+if (a != 1 || b != 3 || c != 6) exit(1);

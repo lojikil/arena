@@ -1,0 +1,7 @@
+# 1) try to instantiate template with undefined parent template
+
+template bar extends foo
+{
+  x;
+}
+a = new bar();

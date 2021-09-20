@@ -1,0 +1,25 @@
+struct strfreq(string x)
+{
+  res = mkstruct();
+  for (i = 0; i < strlen(x); i++) {
+    char = tolower(substr(x, i, 1));
+    if (!isalpha(char)) continue;
+    res = struct_set(res, char, struct_get(res, char) + 1);
+  }
+  return res;
+}
+
+setlocale("");
+
+if (argc < 2) {
+  print("not enough arguments\n");
+  exit(1);
+}
+
+freq = strfreq(argv[1]);
+letters = struct_fields(freq);
+
+for (i = 0; i < (int) letters; i++) {
+  letter = letters[i];
+  print(letter, " occured ", struct_get(freq, letter), " times\n");
+}

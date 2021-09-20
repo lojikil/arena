@@ -1,0 +1,41 @@
+# 1) directly index array off function result
+
+array foo()
+{
+  return mkarray(1,2,3);
+}
+
+a = foo()[0] + foo()[2];
+
+if (a != 4) exit(1);
+
+
+# 2) directly index struct off function result
+
+struct foo()
+{
+  return mkstruct("foo", 42, "bar", 100);
+}
+
+a = foo().foo + foo().bar;
+
+if (a != 142) exit(2);
+
+
+# 3) directly index array off expression
+
+a = ((array) 42)[0];
+b = ((array) 42)[1];
+
+if (a != 42 || b != ()) exit(3);
+
+
+# 4) directly index struct off expression
+
+a = ((struct) 42).value;
+b = ((struct) 42).foo;
+
+if (a != 42 || b != ()) exit(4);
+
+
+print("4 subtests ");

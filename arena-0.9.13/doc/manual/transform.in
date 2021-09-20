@@ -1,0 +1,470 @@
+#!@prefix@/bin/arena
+/*
+ * Manual transformation into different formats
+ *
+ * This Arena script can be used to transform the Arena language
+ * manual ASCII master into a number of different output formats,
+ * most notably HTML and LaTeX.
+ */
+
+/*
+ * Helper functions
+ */
+
+void usage()
+{
+  print("Usage: transform file [mode]\n");
+  print("Available modes:\n");
+  print("\thtml       HTML (default)\n");
+  print("\thtmltoc    HTML table of contents\n");
+  print("\tlatex      LaTeX\n");
+  print("\ttext       Plain text\n");
+  exit(0);
+}
+
+string rtrim(string str)
+{
+  while (strlen(str) > 0 && isspace(substr(str, strlen(str) - 1, 1))) {
+    str = substr(str, 0, strlen(str) - 1);
+  }
+  return str;
+}
+
+/*
+ * HTML formatting functions
+ */
+
+void html_start()
+{
+  print('<?xml version="1.0" encoding="ISO-8859-1" ?>\n');
+  print('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"');
+  print(' "http://www.w3.org/xhtml1/DTD/xhtml1-transitional.dtd">\n\n');
+  print("<html>\n");
+  print("<head>\n");
+  print("<title>Arena Language Manual</title>\n");
+  print('<style type="text/css">\n');
+  print('body { font-size: 14px; }\n');
+  print('pre { background-color: #ccc; padding: 8px; }\n');
+  print('</style>\n');
+  print("</head>\n");
+  print("<body>\n\n");
+  print("<h1>Arena Language Manual</h1>\n\n");
+  print("(C) 2006, Pascal Schmidt &lt;arena-language@ewetel.net&gt;<br />\n");
+}
+
+void html_heading(int level, string num, string content)
+{
+  print('<a name="sec', num, '" />\n');
+  print("<h", level + 1, ">", num, " ", content, "</h", level + 1, ">\n");
+}
+
+void html_line(string line)
+{
+  print(line, "\n");
+}
+
+void html_start_verbatim()
+{
+  print("<pre>\n");
+}
+
+void html_end_verbatim()
+{
+  print("</pre>\n");
+}
+
+void html_blank_line()
+{
+  print("<br /><br />\n\n");
+}
+
+string html_escape(string line)
+{
+  in = line;
+  out = "";
+
+  while (strlen(in) > 0) {
+    brk = strpbrk(in, "<>&");
+    if (is_void(brk)) {
+      out = strcat(out, in);
+      in = ""; 
+    } else {
+      out  = strcat(out, substr(in, 0, brk));
+      part = substr(in, brk, 1);
+      in   = substr(in, brk + 1);
+      switch (part) {
+        case "<":
+          replace = "&lt;";
+          break;
+        case ">":
+          replace = "&gt;";
+          break;
+        case "&":
+          replace = "&amp;";
+          break;
+      }
+      out  = strcat(out, replace);
+    }
+  }
+
+  return out;
+}
+
+void html_end()
+{
+  print("\n</body>\n");
+  print("</html>\n");
+}
+
+/*
+ * HTML table of contents functions
+ */
+
+void htmltoc_nop()
+{
+}
+
+void htmltoc_start()
+{
+  print("<h2>Contents</h2>\n");
+}
+
+void htmltoc_heading(int level, string num, string content)
+{
+  if (strlen(num) == 1 && num != "1") {
+    print('<br />\n');
+  }
+  for (i = 0; i < level - 1; i++) {
+    print('&nbsp;&nbsp;&nbsp;&nbsp;');
+  } 
+  print(num, ' <a href="#sec', num, '">', content, '</a><br />\n');
+}
+
+/*
+ * LaTeX formatting functions
+ */
+
+void latex_start()
+{
+  print("\\documentclass[12pt,oneside,headsepline]{scrbook}\n");
+  print("\\usepackage{listings}\n\n");
+  print("\\ifx\\pdfoutput\\undefined\n");
+  print("\\usepackage[dvips]{color}\n");
+  print("\\else\n");
+  print("\\usepackage[pdftex]{color}\n");
+  print("\\fi\n\n");
+  print("\\definecolor{lightgray}{rgb}{0.90,0.90,0.90}\n\n");
+  print("\\lstset{language={}}\n");
+  print("\\lstset{backgroundcolor=\\color{lightgray}}\n");
+  print("\\lstset{frame=lines}\n");
+  print("\\lstset{aboveskip=14pt}\n");
+  print("\\lstset{aboveskip=14pt}\n");
+  print("\\lstset{basicstyle=\\ttfamily\\small}\n\n");
+  print("\\setcounter{secnumdepth}{3}\n");
+  print("\\setcounter{tocdepth}{3}\n\n");
+  print("\\title{Arena language manual}\n");
+  print("\\author{Pascal Schmidt\\\\arena-language@ewetel.net}\n\n");
+  print("\\begin{document}\n\n");
+  print("\\frontmatter\n");
+  print("\\maketitle\n");
+  print("\\newpage\n");
+  print("\\tableofcontents\n");
+  print("\\newpage\n");
+  print("\\mainmatter\n\n");
+}
+
+void latex_heading(int level, string num, string content)
+{
+  switch (level) {
+    case 1:
+      hdrtype = "chapter";
+      break;
+    case 2:
+      hdrtype = "section";
+      break;
+    case 3:
+      hdrtype = "subsection";
+      break;
+    default:
+      hdrtype = "subsubsection";
+  }
+  print("\\", hdrtype, "{", content, "}\n");
+}
+
+void latex_line(string line)
+{
+  print(line, "\n");
+}
+
+void latex_start_verbatim()
+{
+  print("\\begin{lstlisting}\n");
+}
+
+void latex_end_verbatim()
+{
+  print("\\end{lstlisting}\n");
+}
+
+void latex_blank_line()
+{
+  printf("\n");
+}
+
+string latex_escape(string line)
+{
+  in = line;
+  out = "";
+
+  while (strlen(in) > 0) {
+    brk = strpbrk(in, "#$%&~_^\\{}|");
+    if (is_void(brk)) {
+      out = strcat(out, in);
+      in = ""; 
+    } else {
+      out  = strcat(out, substr(in, 0, brk));
+      part = substr(in, brk, 1);
+      in   = substr(in, brk + 1);
+      switch (part) {
+        case "\\":
+          replace = "$\\backslash$";
+          break;
+        case "|":
+          replace = "\\verb'|'";
+          break;
+        case "~":
+        case "^":
+          replace = strcat("\\", part, "{}");
+          break;
+        case "_":
+          replace = strcat("\\", part, "\\-");
+          break;
+        default:
+          replace = strcat("\\", part);
+      }
+      out  = strcat(out, replace);
+    }
+  }
+
+  impl = strstr(out, "implementation");
+  if (!is_void(impl)) {
+    before = substr(out, 0, impl);
+    after  = substr(out, impl + strlen("implementation"));
+    out    = strcat(before, "im\\-ple\\-men\\-tation", after);
+  }
+
+  return out;
+}
+
+string latex_verbatim_escape(string line)
+{
+  return strcat("    ", substr(line, 1));
+}
+
+void latex_end()
+{
+  print("\n\\end{document}\n");
+}
+
+/*
+ * Plain text formatting functions
+ */
+
+void text_nop()
+{
+}
+
+string text_nop_return(string line)
+{
+  return line;
+}
+
+void text_start()
+{
+  print("Arena Language Manual\n");
+  print("(C) 2006, Pascal Schmidt <arena-language@ewetel.net>\n");
+}
+
+void text_heading(int level, string num, string content)
+{
+  print("\n", num, " ", content, "\n");
+}
+
+void text_line(string line)
+{
+  print(line, "\n");
+}
+
+void text_blank_line()
+{
+  print("\n");
+}
+
+/*
+ * Formatting callback definitions
+ */
+
+htmlfuncs = mkstruct();
+htmlfuncs.start            = html_start;
+htmlfuncs.heading          = html_heading;
+htmlfuncs.line             = html_line;
+htmlfuncs.start_verbatim   = html_start_verbatim;
+htmlfuncs.end_verbatim     = html_end_verbatim;
+htmlfuncs.blank_line       = html_blank_line;
+htmlfuncs.escape           = html_escape;
+htmlfuncs.verbatim_escape  = html_escape;
+htmlfuncs.end              = html_end;
+
+htocfuncs = mkstruct();
+htocfuncs.start            = htmltoc_start;
+htocfuncs.heading          = htmltoc_heading;
+htocfuncs.line             = htmltoc_nop;
+htocfuncs.start_verbatim   = htmltoc_nop;
+htocfuncs.end_verbatim     = htmltoc_nop;
+htocfuncs.blank_line       = htmltoc_nop;
+htocfuncs.escape           = html_escape;
+htocfuncs.verbatim_escape  = htmltoc_nop;
+htocfuncs.end              = htmltoc_nop;
+
+latexfuncs = mkstruct();
+latexfuncs.start           = latex_start;
+latexfuncs.line            = latex_line;
+latexfuncs.heading         = latex_heading;
+latexfuncs.start_verbatim  = latex_start_verbatim;
+latexfuncs.end_verbatim    = latex_end_verbatim;
+latexfuncs.blank_line      = latex_blank_line;
+latexfuncs.escape          = latex_escape;
+latexfuncs.verbatim_escape = latex_verbatim_escape;
+latexfuncs.end             = latex_end;
+
+textfuncs = mkstruct();
+textfuncs.start            = text_start;
+textfuncs.heading          = text_heading;
+textfuncs.line             = text_line;
+textfuncs.start_verbatim   = text_nop;
+textfuncs.end_verbatim     = text_nop;
+textfuncs.blank_line       = text_blank_line;
+textfuncs.escape           = text_nop_return;
+textfuncs.verbatim_escape  = text_nop_return;
+textfuncs.end              = text_nop;
+
+callbacks = mkstruct();
+callbacks.html    = htmlfuncs;
+callbacks.htmltoc = htocfuncs;
+callbacks.latex   = latexfuncs;
+callbacks.text    = textfuncs;
+
+/*
+ * Main program
+ */
+
+if (argc < 2) {
+  usage();
+}
+
+filename = argv[1];
+if (argc > 2) {
+  mode = argv[2];
+} else {
+  mode = "html";
+}
+
+if (is_field(callbacks, mode)) {
+  callback = struct_get(callbacks, mode);
+} else {
+  print("Unknown transformation mode '", mode, "' given\n");
+  usage();
+}
+
+fp = fopen(filename, "r");
+if (is_void(fp)) {
+  print("Could not open file '", filename, "' for input\n");
+  exit(1);
+}
+
+callback.start();
+
+/*
+ * true if in verbatim mode
+ */
+verbatim = false;
+
+/*
+ * true if previous output has implicit additonal vertical spacing
+ */
+spacing = false;
+
+/*
+ * initial values for chapter/section/etc counters
+ */
+levels = mkarray(0, 0, 0, 0);
+
+/*
+ * loop until end of file
+ */
+while (!feof(fp)) {
+  line = rtrim((string) fgets(fp));
+
+  /*
+   * line with initial tab starts verbatim mode,
+   * following line with no initiab tab ends verbatim mode
+   */
+  if (substr(line, 0, 1) == "\t") {
+    if (!verbatim) callback.start_verbatim();
+    verbatim = true;
+  } else {
+    if (verbatim) callback.end_verbatim();
+    verbatim = false;
+  }
+
+  hdrlevel = strspn(line, ".");
+  if (!verbatim && hdrlevel > 0) {
+    /*
+     * line that starts with dots is a section heading
+     */
+
+    ++levels[hdrlevel - 1];
+    for (i = hdrlevel; i < 4; i++) {
+      levels[i] = 0;
+    }
+    hdrnum = "";
+    for (i = 0; i < 4; i++) {
+      if (levels[i] > 0) {
+        hdrnum = strcat(hdrnum, levels[i], ".");
+      }
+    }
+    hdrnum  = substr(hdrnum, 0, strlen(hdrnum) - 1);
+    hdrtext = substr(line, hdrlevel, strlen(line) - hdrlevel);
+    hdrtext = callback.escape(hdrtext);
+    callback.heading(hdrlevel, hdrnum, hdrtext);
+    spacing = true;
+  } else if (strlen(line) == 0 && !spacing) {
+    /*
+     * output empty line if empty line in input and
+     * previous output did not have implicit empty line
+     */
+
+    callback.blank_line();
+    spacing = true;
+  } else {
+    /*
+     * normal text, escape according to current mode
+     */
+
+    if (!verbatim) {
+      line = callback.escape(line);
+    } else {
+      line = callback.verbatim_escape(line);
+    }
+    callback.line(line);
+    spacing = false;
+  }
+}
+
+/*
+ * end of file, end verbatim mode if still active
+ */
+if (verbatim) callback.end_verbatim();
+
+callback.end();
+fclose(fp);

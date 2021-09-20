@@ -1,0 +1,15 @@
+# 1) source file expression
+
+a = __FILE__;
+
+if (is_void(strstr(a, "source"))) exit(1);
+
+
+# 2) source line expression
+
+a = __LINE__;
+
+if (a != 10) exit(2);
+
+
+print("2 subtests ");

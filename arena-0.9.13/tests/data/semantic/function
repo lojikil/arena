@@ -1,0 +1,64 @@
+# 1) assign function
+
+a = print;
+
+if (!is_fn(a)) exit(1);
+
+
+# 2) indirect function call
+
+a = type_of;
+b = a(12);
+
+if (b != "int") exit(2);
+
+
+# 3) read method from struct
+
+template foo
+{
+  int f()
+  {
+    return 12;
+  }
+}
+a = new foo();
+b = a.f;
+c = b();
+
+if (!is_fn(b) || c != 12) exit(3);
+
+
+# 4) write method to struct
+
+a = mkstruct();
+a.foo = type_of;
+b = a.foo(12);
+
+if (b != "int") exit(4);
+
+
+# 5) pass function into function
+
+mixed foo(fn x, mixed y)
+{
+  return x(y);
+}
+a = foo(type_of, 12);
+
+if (a != "int") exit(5);
+
+
+# 6) return function from function
+
+fn foo()
+{
+  return type_of;
+}
+a = foo();
+b = a(12);
+
+if (b != "int") exit(6);
+
+
+print("6 subtests ");

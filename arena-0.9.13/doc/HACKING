@@ -1,0 +1,220 @@
+HACKING ARENA
+-------------
+
+This document gives a short overview of the organization
+of the arena interpreter source code. It also details
+which kind of tests get run by the maintainer and what
+kind of changes the maintainer is willing to accept.
+
+
+GENERAL INTENTION
+-----------------
+
+The source code as it stands now is supposed to be
+a simple and compact implementation of the language.
+As such it is not meant to deliver optimum performance.
+A simple implementation that can easily be seen to be
+correct is preferable to a complicated implementation
+that runs faster but is not immediately understandable
+upon inspection.
+
+Reuse of code is also desirable and could be improved
+further. There are several areas of the code that use
+stack-like constructs. An example of reuse in the
+current code is that the symtab code in libruntime is
+used for namespaces, the struct datatype, and the
+dictionary library functions.
+
+The interpreter is supposed to work with any ANSI C99
+compiler and library. This means no POSIX stuff unless
+that comes as an extension to the standard library that
+can be disabled on non-POSIX systems.
+
+
+REQUIREMENTS
+------------
+
+You will need GNU flex and bison if you want to modify
+the lexer or parser sources.
+
+To append dependency information to the makefiles, you
+can run the following command from the top-level source
+directory:
+
+	make depend
+
+
+
+SOURCE CODE ORGANIZATION
+------------------------
+
+The source code is split up into several small libraries
+that each provide a more or less well encapsulated aspect
+of the language or interpreter.
+
+libmisc/
+	This contains helper functions needed by basically
+	all of the other libraries. At the moment this
+	means error reporting with source code line and
+	column indications (to indicate where in an Arena
+	script an error occurred).
+
+libruntime/
+	This provides the runtime type system of the
+	language. The two main areas are functions that
+	operate on the basic types (value_*.c) and
+	functions that provide namespacing (symtab_*.c).
+	Most of the functions are used by libeval and
+	libstdlib to provide the semantics and library of
+	the language.
+
+libparser/
+	This contains an Arena parser generated with the
+	help of lex and yacc. It is independent of the
+	rest of the runtime system. The main entry point
+	is parse_file() in parse_file.c, which takes a
+	file name and returns a stmt_list pointer on a
+	successful parse.
+
+libeval/
+	This library provides all the functions needed to
+	implement the semantics of the language on top
+	of libruntime and libparser. The main entry point
+	is eval_stmt_list() in eval_stmt.c, which takes
+	a stmt_list pointer as returned from the parser
+	and uses the runtime type system to evaluate the
+	contained language statements.
+
+libstdlib/
+	This library contains implementations for all
+	standard library functions of the Arena language.
+	The names of the individual C files should be
+	pretty self-explanatory, for example file.c
+	contains the file I/O library functions. The
+	function stdlib_register() in register.c is
+	responsible for making library functions known to
+	the rest of the runtime system.
+
+tests/
+	This directory contains the regression test suite
+	that includes both tests for the individual C
+	functions that make up the interpreter, and tests
+	written in Arena itself that check for semantic
+	or library errors.
+
+
+REGRESSION TESTS
+----------------
+
+These reside in the tests/ directory and use a custom
+test framework implemented by the file test.c. Go ahead
+and read it, it is below 100 lines in size.
+
+The other C files in the tests/ directory contain test
+cases for the C libraries that make up the interpreter.
+The one notable exception is tparser.c, which is
+compiled into an interpreter binary that does syntax
+checking only (for stand-alone testing of the parser
+library).
+
+The test cases defined in complex.c shell out to the
+real interpreter to run test cases written in the
+Arena language itself. The Arena source code files
+for that reside in the tests/data/ directory, which
+has the following subdirectories:
+
+simple/
+	Minimalist snippets to test the parser on
+	small source code constructs.
+
+semantic/
+	Tests for the language semantics implementation
+	of the interpreter.
+
+library/
+	Tests for the standard library of functions.
+
+complex/
+	Larger example programs to test the parser
+	with some more or less real world problems.
+	At the moment this includes a bubble sort
+	implementation and a "Towers of Hanoi" solver.
+
+The tests in the above directories are written so
+that the exit status of the test is 0 if all contained
+test cases ran successfully. If a test case fails, the
+exit status is the number of the test case that failed.
+For example, an exit status of 17 means the 17th test
+in the file failed.
+
+
+VALGRIND TESTING
+----------------
+
+Invalid memory accesses and memory leaks are checked
+using the valgrind(1) tool, which runs the code in
+a virtual machine and tracks all memory accesses.
+
+To check for errors, the interpreter is run on all
+test cases written in Arena.
+
+Invalid memory accesses are not acceptable in any case,
+no matter whether the Arena script itself triggered a
+runtime error or not.
+
+Memory leaks are not acceptable for Arena scripts
+that don't trigger a runtime error. An error-free
+script should never cause a memory leak in the runtime
+system.
+
+When a script causes a runtime error, some memory leaks
+can be hard to avoid. For example, it requires complex
+bookkeeping code to free up all function arguments
+when a runtime error occurs deep inside nested function
+calls. Since the interpreter exits on a runtime error,
+the operating system will take care of the leak --
+however, even such leaks should be avoided if possible.
+
+
+RELEASE TESTING
+---------------
+
+The maintainer runs the regression test suite before
+each official release. Testing with valgrind is
+currently a manual process that will only be run for
+a few selected test cases -- running all test cases
+through valgrind would only happen if there were
+major changes to memory management inside newer code.
+
+
+SUBMITTING CHANGES
+------------------
+
+If you have made changes to arena that you would like to
+see incorporated into the maintainer's version, feel
+free to send them to the maintainer per email.
+
+Changes should be in the form of patches to the latest
+official release, generated using diff -u. Don't send
+patches without context information!
+
+A patch should come with an explanation of the changes
+it does and reasons why it should be applied to the
+official version of arena.
+
+Patches that simplify the implementation of the interpreter
+are most welcome, as are improvements to the language
+manual.
+
+Patches that improve performance will only be accepted
+if they do not overly complicate the code. However, this
+has to be weighted against the performance improvement
+the patch provides. For example, the file value_copy.c in
+libruntime contains optimized code for copying arrays and
+structs. This was accepted because profiling had shown
+that this was the area of copy where the interpreter was
+spending most of its time!
+
+Submit your changes to:
+
+	Pascal Schmidt <arena-language@ewetel.net>

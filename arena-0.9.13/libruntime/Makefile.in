@@ -1,0 +1,34 @@
+SOURCES = call_check.c call_func.c call_sig.c symtab_entry.c \
+          symtab_memory.c symtab_stack.c value_array.c value_cast.c \
+          value_cons.c value_copy.c value_dump.c value_memory.c \
+          value_struct.c
+OBJECTS = call_check.o call_func.o call_sig.o symtab_entry.o \
+          symtab_memory.o symtab_stack.o value_array.o value_cast.o \
+          value_cons.o value_copy.o value_dump.o value_memory.o \
+          value_struct.o
+LIB = libruntime.a
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+
+all: $(LIB)
+
+$(LIB): $(OBJECTS)
+	ar -crs $@ $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f $(OBJECTS)
+	rm -f $(LIB)
+
+distclean: clean
+	rm -f Makefile
+
+realclean: clean
+
+depend: $(SOURCES)
+	$(CC) $(CFLAGS) -MM $(SOURCES) >> Makefile
+
+# automatically generated dependencies follow

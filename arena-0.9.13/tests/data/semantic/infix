@@ -1,0 +1,190 @@
+# 1) addition of int
+
+a = 5;
+b = 7;
+c = a + b;
+
+if (a != 5 || b != 7 || c != 12) exit(1);
+
+
+# 2) addition of float
+
+a = 23.0;
+b = 17.0;
+c = a + b;
+
+if (a != 23.0 || b != 17.0 || c != 40.0) exit(2);
+
+
+# 3) subtraction of int
+
+a = 5;
+b = 7;
+c = a - b;
+
+if (a != 5 || b != 7 || c != -2) exit(3);
+
+
+# 4) subtracton of float
+
+a = 23.0;
+b = 17.0;
+c = a - b;
+
+if (a != 23.0 || b != 17.0 || c != 6.0) exit(4);
+
+
+# 5) multiplication of int
+
+a = 5;
+b = 7;
+c = a * b;
+
+if (a != 5 || b != 7 || c != 35) exit(5);
+
+
+# 6) multiplication of float
+
+a = 23.0;
+b = 17.0;
+c = a * b;
+
+if (a != 23.0 || b != 17.0 || c != 391.0) exit(6);
+
+
+# 7) division of int
+
+a = 42;
+b = 2;
+c = a / b;
+
+if (a != 42 || b != 2 || c != 21) exit(7);
+
+
+# 8) division of float
+
+a = 10.0;
+b = 4.0;
+c = a / b;
+
+if (a != 10.0 || b != 4.0 || c != 2.5) exit(8);
+
+
+# 9) modulus of int
+
+a = 7;
+b = 3;
+c = a % b;
+
+if (a != 7 || b != 3 || c != 1) exit(9);
+
+
+# 10) modulus of float
+
+a = 45.0;
+b = 13.0;
+c = a % b;
+
+if (a != 45.0 || b != 13.0 || c != 6.0) exit(10);
+
+
+# 11) power of int
+
+a = 5;
+b = 3;
+c = a ** b;
+
+if (a != 5 || b != 3 || c != 125) exit(11);
+
+
+# 12) power of float
+
+a = 2.0;
+b = 10.0;
+c = a ** b;
+
+if (a != 2.0 || b != 10.0 || c != 1024.0) exit(12);
+
+
+# 13) boolean and false
+
+a = false;
+b = true;
+c = a && b;
+
+if (a || !b || c) exit(13);
+
+
+# 14) boolean and true
+
+a = true;
+b = true;
+c = a && b;
+
+if (!a || !b || !c) exit(14);
+
+
+# 15) boolean or false
+
+a = false;
+b = false;
+c = a || b;
+
+if (a || b || c) exit(15);
+
+
+# 16) boolean or true
+
+a = false;
+b = true;
+c = a || b;
+
+if (a || !b || !c) exit(16);
+
+
+# 17) bitwise and of int
+
+a = 12;
+b = 4;
+c = a & b;
+
+if (a != 12 || b != 4 || c != 4) exit(17);
+
+
+# 18) bitwise or of int
+
+a = 12;
+b = 4;
+c = a | b;
+
+if (a != 12 || b != 4 || c != 12) exit(18);
+
+
+# 19) bitwise exclusive or of int
+
+a = 12;
+b = 4;
+c = a ^ b;
+
+if (a != 12 || b != 4 || c != 8) exit(19);
+
+
+# 20) bitwise left shift of int
+
+a = 12;
+b = 2;
+c = a << b;
+
+if (a != 12 || b != 2 || c != 48) exit(20);
+
+
+# 21) bitwise right shift of int
+
+a = 48;
+b = 2;
+c = a >> b;
+
+if (a != 48 || b != 2 || c != 12) exit(21);
+
+
+print("21 subtests ");

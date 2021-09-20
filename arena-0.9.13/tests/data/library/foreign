@@ -1,0 +1,68 @@
+# first try to setup some prelimiaries
+
+if (!dyn_supported()) exit(0);
+
+libc = dyn_open("libc.so.6");					# Linux
+if (is_void(libc)) libc = dyn_open("libc.so.1");		# Solaris
+if (is_void(libc)) libc = dyn_open("libSystem.B.dylib");	# MacOS X
+if (is_void(libc)) exit(0);
+
+libm = dyn_open("libm.so.6");					# Linux
+if (is_void(libm)) libm = dyn_open("libm.so.1");		# Solaris
+if (is_void(libm)) libm = dyn_open("libSystem.B.dylib");	# MacOS X
+if (is_void(libm)) exit(0);
+
+
+# 1) obtain address of function
+
+a = dyn_fn_pointer(libc, "abs");
+
+if (!is_resource(a)) exit(1);
+
+
+# 2) call C function that takes and returns int
+
+a = dyn_call_int(libc, "abs", -42);
+
+if (a != 42) exit(2);
+
+
+# 3) call C function that takes and returns C double
+
+a = dyn_call_float(libm, "fabs", -2.5);
+
+if (a != 2.5) exit(3);
+
+
+# 4) call C function that takes string and returns int
+
+a = dyn_call_int(libc, "strlen", "foobar");
+
+if (a != 6) exit(4);
+
+
+# 5) call C function that takes and returns pointer
+
+m = calloc(10, 1);
+p = dyn_call_ptr(libc, "memset", m, 1, 10);
+a = b = 0;
+for (i = 0; i < 10; i++) {
+  a += mgetchar(m, i);
+  b += mgetchar(p, i);
+}
+
+if (a != 10 || b != 10) exit(5);
+
+
+# 6) check for dynamic library resource
+
+if (!is_dyn_resource(libc)) exit(6);
+
+
+# 7) call C function takes and returns C float
+
+a = dyn_call_float(libm, "roundf", cfloat(-2.5));
+if (a != -3.0) exit(7);
+
+
+print("7 subtests ");

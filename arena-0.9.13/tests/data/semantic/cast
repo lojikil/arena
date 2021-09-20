@@ -1,0 +1,338 @@
+# 1) cast void to void
+
+a = ();
+b = (void) a;
+
+if (b != ()) exit(1);
+
+
+# 2) cast void to bool
+
+a = ();
+b = (bool) a;
+
+if (b) exit(2);
+
+
+# 3) cast void to int
+
+a = ();
+b = (int) a;
+
+if (b != 0) exit(3);
+
+
+# 4) cast void to float
+
+a = ();
+b = (float) a;
+
+if (b != 0.0) exit(4);
+
+
+# 5) cast void to string
+
+a = ();
+b = (string) a;
+
+if (b != "") exit(5);
+
+
+# 6) cast void to array
+
+a = ();
+b = (array) a;
+
+if ((int) b != 1 || b[0] != ()) exit(6);
+
+
+# 7) cast bool to void
+
+a = true;
+b = (void) a;
+
+if (b != ()) exit(7);
+
+
+# 8) cast bool to bool
+
+a = true;
+b = (bool) a;
+
+if (b != true) exit(8);
+
+
+# 9) cast bool to int
+
+a = true;
+b = (int) a;
+
+if (b != 1) exit(9);
+
+
+# 10) cast bool to float
+
+a = true;
+b = (float) a;
+
+if (b != 1.0) exit(10);
+
+
+# 11) cast bool to string
+
+a = true;
+b = (string) a;
+
+if (b != "1") exit(11);
+
+
+# 12) cast bool to array
+
+a = true;
+b = (array) a;
+
+if ((int) b != 1 || b[0] != true) exit(12);
+
+
+# 13) cast int to void
+
+a = 42;
+b = (void) a;
+
+if (b != ()) exit(13);
+
+
+# 14) cast int to bool
+
+a = 42;
+b = (bool) a;
+
+if (b != true) exit(14);
+
+
+# 15) cast int to int
+
+a = 42;
+b = (int) a;
+
+if (b != 42) exit(15);
+
+
+# 16) cast int to float
+
+a = 42;
+b = (float) a;
+
+if (b != 42.0) exit(16);
+
+
+# 17) cast int to string
+
+a = 42;
+b = (string) a;
+
+if (b != "42") exit(17);
+
+
+# 18) cast int to array
+
+a = 42;
+b = (array) a;
+
+if ((int) b != 1 || b[0] != 42) exit(18);
+
+
+# 19) cast float to void
+
+a = 13.0;
+b = (void) a;
+
+if (b != ()) exit(19);
+
+
+# 20) cast float to bool
+
+a = 13.0;
+b = (bool) a;
+
+if (b != true) exit(20);
+
+
+# 21) cast float to int
+
+a = 13.0;
+b = (int) a;
+
+if (b != 13) exit(21);
+
+
+# 22) cast float to float
+
+a = 13.0;
+b = (float) a;
+
+if (b != 13.0) exit(22);
+
+
+# 23) cast float to string
+
+a = 13.7;
+b = (string) a;
+
+if (b != "13.7") exit(23);
+
+
+# 24) cast float to array
+
+a = 13.0;
+b = (array) a;
+
+if ((int) b != 1 || b[0] != 13.0) exit(24);
+
+
+# 25) cast string to void
+
+a = "12.5";
+b = (void) a;
+
+if (b != ()) exit(25);
+
+
+# 26) cast string to bool
+
+a = "12.5";
+b = (bool) a;
+
+if (b != true) exit(26);
+
+
+# 27) cast string to int
+
+a = "12.5";
+b = (int) a;
+
+if (b != 12) exit(27);
+
+
+# 28) cast string to float
+
+a = "12.5";
+b = (float) a;
+
+if (b != 12.5) exit(28);
+
+
+# 29) cast string to string
+
+a = "12.5";
+b = (string) a;
+
+if (b != "12.5") exit(29);
+
+
+# 30) cast string to array
+
+a = "12.5";
+b = (array) a;
+
+if ((int) b != 1 || b[0] != "12.5") exit(30);
+
+
+# 31) cast array to void
+
+a = mkarray(1,2);
+b = (void) a;
+
+if (b != ()) exit(31);
+
+
+# 32) cast array to bool
+
+a = mkarray(1,2);
+b = (bool) a;
+
+if (b != true) exit(32);
+
+
+# 33) cast array to int
+
+a = mkarray(1,2);
+b = (int) a;
+
+if (b != 2) exit(33);
+
+
+# 34) cast array to float
+
+a = mkarray(1,2);
+b = (float) a;
+
+if (b != 2.0) exit(34);
+
+
+# 35) cast array to string
+
+a = mkarray(1,2);
+b = (string) a;
+
+if (b != "Array") exit(35);
+
+
+# 36) cast array to array
+
+a = mkarray(1,2);
+b = (array) a;
+
+if ((int) b != 2 || b[0] != 1 || b[1] != 2) exit(36);
+
+
+# 37) cast fn to void
+
+a = (void) print;
+
+if (a != ()) exit(37);
+
+
+# 38) cast fn to bool
+
+a = (bool) print;
+
+if (a != true) exit(38);
+
+
+# 39) cast fn to int
+
+a = (int) print;
+
+if (a != 1) exit(39);
+
+
+# 40) cast fn to float
+
+a = (float) print;
+
+if (a != 1.0) exit(40);
+
+
+# 41) cast fn to string
+
+a = (string) print;
+
+if (a != "Function") exit(41);
+
+
+# 42) cast fn to array
+
+a = (array) print;
+
+if ((int) a != 1 || !is_fn(a[0])) exit(42);
+
+
+# 43) cast fn to struct
+
+a = (struct) print;
+
+if (!is_fn(a.value)) exit(43);
+
+
+print("43 subtests ");

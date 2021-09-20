@@ -1,0 +1,8 @@
+# 1) call to undefined method
+
+template foo
+{
+  i;
+}
+a = new foo();
+a.notlivinghere();

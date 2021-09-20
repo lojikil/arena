@@ -1,0 +1,100 @@
+/*
+ * convert field contents to string (0 = empty, 1 = X, 2 = O)
+ */
+string str_field(int field)
+{
+  chars = mkarray(" ", "X", "O");
+  return chars[field];
+}
+
+/*
+ * print game map (two-dimensional 3x3 array)
+ */
+void print_map(array map)
+{
+  print("\n   A B C\n");
+  for (i = 0; i < 3; i++) {
+    print("  +-+-+-+\n", i + 1, " |");
+    for (j = 0; j < 3; j++) {
+      print(str_field(map[i][j]), "|");
+    }
+    print("\n");
+  }
+  print("  +-+-+-+\n");
+}
+
+/*
+ * get winner if any (0 = none, 1 = X, 2 = O)
+ */
+int get_winner(array a)
+{
+  for (i = 0; i < 3; i++) {
+    if (a[i][0] && a[i][0] == a[i][1] && a[i][1] == a[i][2]) return a[i][0];
+    if (a[0][i] && a[0][i] == a[1][i] && a[1][i] == a[2][i]) return a[0][i];
+  }
+
+  if (a[0][0] && a[0][0] == a[1][1] && a[1][1] == a[2][2]) return a[0][0];
+  if (a[0][2] && a[0][2] == a[1][1] && a[1][1] == a[2][0]) return a[0][2];
+  
+  return 0;
+}
+
+/*
+ * check for draw (all fields non-empty)
+ */
+bool is_draw(array map)
+{
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < 3; j++) {
+      if (map[i][j] == 0) return false;
+    }
+  }
+  return true;
+}
+
+/*
+ * initial game map (all fields empty)
+ */
+map = mkarray(mkarray(0, 0, 0), mkarray(0, 0, 0), mkarray(0, 0, 0));
+
+/*
+ * play the game
+ */
+turn = 0;
+for (;;) {
+  print_map(map);
+
+  winner = get_winner(map);
+  if (winner > 0) {
+    print("\nPlayer ", str_field(winner), " has won!\n");
+    break;
+  }
+
+  if (is_draw(map)) {
+    print("\nThe game ends in a draw!\n");
+    break;
+  }
+
+  print("Player ", str_field(turn % 2 + 1), ", your move? ");
+  reply = fgets(stdin);
+
+  x = toupper(substr(reply, 0, 1));
+  x = ord(x) - ord("A");
+
+  y = substr(reply, 1, 1);
+  y = ord(y) - ord("1");
+
+  if (x < 0 || x > 2 || y < 0 || y > 2) {
+    print("Impossible move, try again.\n");
+    continue;
+  }
+
+  if (map[y][x] != 0) {
+    print("Already occupied, try again.\n");
+    continue;
+  }
+
+  map[y][x] = (turn % 2) + 1;
+
+  ++turn;
+}

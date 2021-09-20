@@ -1,0 +1,13 @@
+# 1) equality of functions
+
+mixed f(int x)
+{
+  return x * 2;
+}
+g = f;
+a = (print == print);
+b = (print == printf);
+c = (f == g);
+d = (f == print);
+
+if (!a || b || !c || d) exit(1);

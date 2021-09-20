@@ -1,0 +1,7 @@
+# 1) cast argument value to fn
+
+void foo(forced fn x)
+{
+  x();
+}
+foo(12);

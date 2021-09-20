@@ -1,0 +1,177 @@
+/*
+ * Copyright (C) 2007, Sander van Dijk. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+template File {
+	close_when_done = false;
+	file = ();
+
+	void File(mixed res_or_name) {
+		if (is_resource(res_or_name) && is_file_resource(res_or_name)) {
+			this.file = res_or_name;
+			this.close_when_done = false;
+		}
+		else if (is_string(res_or_name)) {
+			this.file = fopen(res_or_name, "r");
+			if (!this.file)
+				throw sprintf("%s: can't open file \x22%s\x22", tmpl_of(this), res_or_name);
+			this.close_when_done = true;
+		}
+		else
+			throw sprintf("%s: illegal argument", tmpl_of(this));
+	}
+
+	void close() {
+		if (!is_resource(this.file) || !is_file_resource(this.file))
+			throw sprintf("%s: attempt to close a non-open file", tmpl_of(this));
+		fclose(this.file);
+		this.file = ();
+	}
+
+	mixed getword() {
+		if (!this.file)
+			return ();
+		w = mkarray();
+		for (i=0; c = fgetc(this.file);)
+			if (isgraph(c))
+				w[i++] = c;
+			else if (w)
+				return implode(w);
+		if (this.close_when_done)
+			this.close();
+		return ();
+	}
+}
+
+template Markov {
+	dict = ();
+	plen = 2;
+
+	seed = "";
+
+	void Markov(int plen) {
+		this.plen = plen;
+		if (!this.plen > 0)
+			throw sprintf("%s: invalid prefix length", tmpl_of(this));
+		this.dict = dopen(16);
+		if (!this.dict)
+			throw sprintf("%s: can't open dictionary", tmpl_of(this));
+	}
+
+	void addfile(mixed res_or_name) {
+		file = new File(res_or_name); // can throw an exception
+		prefix = replicate(this.seed, this.plen);
+		while (true) {
+			w = file.getword();
+			arr = dread(this.dict, this.mkkey(prefix));
+			if (!arr)
+				arr = nil();
+			arr = cons(w, arr); 
+			dwrite(this.dict, this.mkkey(prefix), arr);
+			if (!w)
+				break;
+			prefix = cons(w, init(prefix));
+		}
+	}
+
+	void generate(int max) {
+		prefix = replicate(this.seed, this.plen);
+		for (i=0; (max>0 ? i<max : true); i++) {
+			arr = dread(this.dict, this.mkkey(prefix));			
+			if (!arr)
+				throw sprintf("%s: entry does't exist in dictionary", tmpl_of(this));
+			w = arr[rand(0, length(arr)-1)];
+			if (!w)
+				break;
+			print(w, " ");
+			prefix = cons(w, init(prefix));
+		}
+	}
+
+	string mkkey(array prefix) {
+		s = " ";
+		for (i=0; i<length(prefix); i++)
+			s = strcat(s, prefix[i], " ");
+		return s;
+	}
+}
+
+/* defaults */
+
+plen = 2;
+glen = 0;
+files = nil();
+
+/* options and arguments */
+
+for (i=1; i<argc; i++) {
+        arg = explode(argv[i]);
+        if (arg[0] == "-")
+                switch(arg[1]) {
+		case "p":
+			plen = (int)argv[++i];
+			break;
+		case "g":
+			glen = (int)argv[++i];
+			break;
+		case ():
+			files = cons(stdin, files);
+			break;
+		default:
+			print("Copyright (C) 2007, Sander van Dijk. All rights reserved.\n",
+			      "\n",
+			      "Usage: ", argv[0], " [-p <length>] [-g <length>] [file ...]\n",
+			      "\n",
+			      "       Possible arguments:\n",
+			      "       -p <length>   The length (in words) of the prefixes.\n",
+			      "                     Default is 2.\n",
+			      "       -g <length>   The maximum length (in words) of the generated output\n",
+			      "                     (0 or negative values mean generate until an\n",
+			      "                     endpoint of one of the input files is generated).\n",
+			      "                     Default is 0.\n",
+			      "       file ...      The files to use as input. \x22-\x22 means standard input.\n",
+			      "                     Default is standard input.\n",
+			      "\n");
+			exit(0);
+		}
+	else
+		files = cons(argv[i], files);
+}
+if (!files)
+	files = cons(stdin, files);
+
+/* main */
+
+try {
+	markov = new Markov(plen);
+	for (i=0; i<length(files); i++)
+		try
+			markov.addfile(files[i]);
+		catch (e)
+			print("Exception: ", e, "\n");
+	markov.generate(glen);
+}
+catch (e)
+	print("Exception: ", e, "\n");

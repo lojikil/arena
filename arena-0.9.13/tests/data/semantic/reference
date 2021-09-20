@@ -1,0 +1,51 @@
+# 1) scalar value with and without reference
+
+void foo(int i)
+{
+  i *= 2;
+}
+a = 2;
+foo(a);
+if (a != 2) exit(1);
+foo(&a);
+if (a != 4) exit(1);
+
+
+# 2) struct value with and without reference
+
+template counter
+{
+  i = 0;
+  void inc()
+  {
+    ++this.i;
+  }
+}
+void twice(st)
+{
+  st.inc();
+  st.inc();
+}
+a = new counter();
+twice(a);
+if (a.i != 0) exit(2);
+twice(&a);
+if (a.i != 2) exit(2);
+
+
+# 3) reference resolved in correct order
+
+void swap(mixed a, mixed b)
+{
+  c = a;
+  a = b;
+  b = c;
+}
+a = mkarray(1,2,3);
+i = 1;
+swap(&i, &a[i]);
+
+if ((int) a != 3 || a[0] != 1 || a[1] != 1 || a[2] != 3 || i != 2) exit(3);
+
+
+print("3 subtests ");

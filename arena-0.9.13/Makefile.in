@@ -1,0 +1,85 @@
+SOURCES = api.c arena.c
+OBJECTS = api.o arena.o
+SUBDIRS = libmisc libruntime libparser libeval libstdlib tests
+LIBS = -Llibeval -leval -Llibparser -lparser -Llibstdlib -lstdlib \
+       -Llibruntime -lruntime -Llibmisc -lmisc -lm @LIBS@
+
+@SET_MAKE@
+CC = @CC@
+CFLAGS = @CFLAGS@
+
+DESTDIR = 
+prefix = @prefix@
+exec_prefix = @prefix@
+bindir = @bindir@
+mandir = @mandir@
+man1dir = ${mandir}/man1
+docdir = ${prefix}/share/doc
+
+INSTALL = @INSTALL@
+STRIP = strip
+
+all: arena
+
+arena: subdirs_all $(OBJECTS)
+	$(CC) -o $@ $(OBJECTS) $(LIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+install: arena
+	$(INSTALL) -m 755 -d $(DESTDIR)$(bindir)
+	$(INSTALL) -m 755 arena $(DESTDIR)$(bindir)
+	$(INSTALL) -m 755 -d $(DESTDIR)$(man1dir)
+	$(INSTALL) -m 644 doc/arena.1 $(DESTDIR)$(man1dir)
+	$(INSTALL) -m 755 -d $(DESTDIR)$(docdir)/arena
+	$(INSTALL) -m 644 doc/manual/manual.asc $(DESTDIR)$(docdir)/arena
+	$(INSTALL) -m 755 doc/manual/transform $(DESTDIR)$(docdir)/arena
+
+install-strip: install
+	$(STRIP) $(DESTDIR)$(bindir)/arena
+
+uninstall:
+	rm -f $(DESTDIR)$(bindir)/arena
+	rm -f $(DESTDIR)$(man1dir)/arena.1
+	rm -f $(DESTDIR)$(docdir)/arena/manual.asc
+	rm -f $(DESTDIR)$(docdir)/arena/transform
+
+clean: subdirs_clean
+	rm -f $(OBJECTS)
+	rm -f arena
+
+distclean: clean subdirs_distclean
+	rm -f config.h config.log config.status
+	rm -f Makefile
+	rm -f doc/arena.1
+	rm -f doc/manual/transform
+
+realclean: distclean
+	rm -f configure
+
+depend: subdirs_depend
+	$(CC) $(CFLAGS) -MM $(SOURCES) >> Makefile
+
+lines:
+	wc -l *.c libruntime/*.{c,h} libeval/*.{c,h} libstdlib/*.{c,h} libparser/*.{c,l,y,h}
+
+lines_all:
+	wc -l *.c libruntime/*.{c,h} libeval/*.{c,h} libstdlib/*.{c,h} libparser/*.{c,l,y,h} tests/*.{c,h}
+
+test: all
+	cd tests && $(MAKE) check
+
+subdirs_all:
+	for i in $(SUBDIRS); do (cd $$i; $(MAKE) all); done
+
+subdirs_clean:
+	for i in $(SUBDIRS); do (cd $$i; $(MAKE) clean); done
+
+subdirs_distclean:
+	for i in $(SUBDIRS); do (cd $$i; $(MAKE) distclean); done
+
+subdirs_depend:
+	for i in $(SUBDIRS); do (cd $$i; $(MAKE) depend); done
+
+# automatically generated dependencies follow

@@ -1,0 +1,41 @@
+SOURCES = test.c value.c symtab.c call.c parse.c simple.c eval.c \
+	  math.c userdef.c complex.c cast.c tparser.c
+TESTOBJS = test.o value.o symtab.o call.o parse.o simple.o eval.o \
+	   math.o userdef.o complex.o cast.o
+TPARSEROBJS = tparser.o
+
+LIBDEPS = ../libeval/libeval.a ../libmisc/libmisc.a \
+          ../libruntime/libruntime.a ../libparser/libparser.a \
+          ../libstdlib/libstdlib.a
+LIBS = -L../libeval -leval -L../libstdlib -lstdlib \
+       -L../libruntime -lruntime -L../libparser -lparser \
+       -L../libmisc -lmisc -lm @LIBS@
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+
+all:
+
+test: $(TESTOBJS) $(LIBDEPS)
+	$(CC) -o $@ $(TESTOBJS) $(LIBS)
+
+tparser: $(TPARSEROBJS) $(LIBDEPS)
+	$(CC) -o $@ $(TPARSEROBJS) $(LIBS)
+
+check: tparser test
+	./test
+
+clean:
+	rm -f $(TESTOBJS)
+	rm -f $(TPARSEROBJS)
+	rm -f test tparser
+
+distclean: clean
+	rm -f Makefile
+
+realclean: clean
+
+depend: $(SOURCES)
+	$(CC) $(CFLAGS) -MM $(SOURCES) >> Makefile
+
+# automatically generated dependencies follow

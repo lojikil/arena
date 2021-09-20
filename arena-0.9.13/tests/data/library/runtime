@@ -1,0 +1,234 @@
+# 1) type of void
+
+a = ();
+t = type_of(a);
+p = is_void(a);
+q = is_a(a, "void");
+
+if (t != "void" || !p || !q) exit(1);
+
+
+# 2) type of bool
+
+a = true;
+t = type_of(a);
+p = is_bool(a);
+q = is_a(a, "bool");
+
+if (t != "bool" || !p || !q) exit(2);
+
+
+# 3) type of int
+
+a = 12;
+t = type_of(a);
+p = is_int(a);
+q = is_a(a, "int");
+
+if (t != "int" || !p || !q) exit(3);
+
+
+# 4) type of float
+
+a = 12.0;
+t = type_of(a);
+p = is_float(a);
+q = is_a(a, "float");
+
+if (t != "float" || !p || !q) exit(4);
+
+
+# 5) type of string
+
+a = "foo";
+t = type_of(a);
+p = is_string(a);
+q = is_a(a, "string");
+
+if (t != "string" || !p || !q) exit(5);
+
+
+# 6) type of array
+
+a = mkarray(1, 2, 3);
+t = type_of(a);
+p = is_array(a);
+q = is_a(a, "array");
+
+if (t != "array" || !p || !q) exit(6);
+
+
+# 7) type of struct
+
+a = mkstruct("foo", 42);
+t = type_of(a);
+p = is_struct(a);
+q = is_a(a, "struct");
+
+if (t != "struct" || !p || !q) exit(7);
+
+
+# 8) function and variable tests
+
+p = is_function("is_fn");
+q = is_var("p");
+
+if (!p || !q) exit(8);
+
+
+# 9) locality test
+
+a = b = 12;
+int foo(int a)
+{
+  return is_local("a") + 2 * is_local("b");
+}
+c = foo(42);
+
+if (c != 1) exit(9);
+
+
+# 10) array construction
+
+a = mkarray(1, 2, 3);
+
+if ((int) a != 3 || a[0] != 1 || a[1] != 2 || a[2] != 3) exit(10);
+
+
+# 11) struct construction
+
+a = mkstruct("foo", 42, "bar", 100);
+
+if (a.foo != 42 || a.bar != 100) exit(11);
+
+
+# 12) set variable
+
+set("a", 32);
+
+if (a != 32) exit(12);
+
+
+# 13) get variable
+
+a = 42;
+b = get("a");
+
+if (b != 42) exit(13);
+
+
+# 14) unset variable
+
+a = 12;
+unset("a");
+p = is_var("a");
+
+if (p) exit(14);
+
+
+# 15) make variable global
+
+a = 12;
+void foo()
+{
+  a = 42;
+  global("a");
+}
+foo();
+
+if (a != 42) exit(15);
+
+
+# 16) check template existence
+
+template foo
+{
+  i;
+}
+
+if (!is_tmpl("foo") || is_tmpl("oof")) exit(16);
+
+
+# 17) get template of non-struct
+
+a = 12;
+b = tmpl_of(a);
+
+if (b != ()) exit(17);
+
+
+# 18) get template of anonymous structure
+
+a = mkstruct("foo", 12);
+b = tmpl_of(a);
+
+if (b != ()) exit(18);
+
+
+# 19) get template of structure
+
+template foo
+{
+  i;
+}
+a = new foo();
+b = tmpl_of(a);
+
+if (b != "foo") exit(19);
+
+
+# 20) is_a and templates
+
+template foo
+{
+  i;
+}
+template bar extends foo
+{
+  j;
+}
+a = new bar();
+
+if (!is_a(a, "foo") || !is_a(a, "bar")) exit(20);
+
+
+# 21) globality test
+
+a = b = 12;
+int foo(int a)
+{
+  return is_global("a") + 2 * is_global("b");
+}
+c = foo(42);
+
+if (c != 2) exit(21);
+
+
+# 22) get static member of template
+
+template foo
+{
+  i = 42;
+}
+a = get_static("foo", "i");
+
+if (a != 42) exit(22);
+
+
+# 23) get language and library version
+
+v = versions();
+
+if (v.v_language_major != 2 || v.v_language_minor != 2) exit(23);
+if (v.v_library_major  != 3 || v.v_library_minor  != 0) exit(23);
+
+
+# 24) cast to given type name
+
+a = 42;
+b = cast_to(a, "string");
+
+if (a != 42 || b != "42") exit(24);
+
+
+print("24 subtests ");

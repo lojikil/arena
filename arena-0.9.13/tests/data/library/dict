@@ -1,0 +1,106 @@
+# 1) create dictionary
+
+d = dopen(5);
+
+if (is_void(d) || !is_dict_resource(d)) exit(1);
+
+
+# 2) check empty dictionary
+
+p = dexists(d, "foo");
+
+if (p) exit(2);
+
+
+# 3) read empty dictionary
+
+p = dread(d, "foo");
+
+if (!is_void(p)) exit(3);
+
+
+# 4) write dictionary
+
+p = dwrite(d, "foo", 42);
+
+if (!p) exit(4);
+
+
+# 5) check dictionary
+
+p = dexists(d, "foo");
+
+if (!p) exit(5);
+
+
+# 6) read dictionary
+
+p = dread(d, "foo");
+
+if (p != 42) exit(6);
+
+
+# 7) remove from dictionary
+
+p = dremove(d, "foo");
+
+if (!p) exit(7);
+
+
+# 8) check removed entry
+
+p = dexists(d, "foo");
+
+if (p) exit(8);
+
+
+# 9) read removed entry
+
+p = dread(d, "foo");
+
+if (!is_void(p)) exit(9);
+
+
+# 10) overwrite
+
+p = dwrite(d, "bar", 100);
+q = dwrite(d, "bar", "foo");
+r = dread(d, "bar");
+
+if (!p || !q || r != "foo") exit(10);
+
+
+# 11) close
+
+dclose(d);
+
+
+# 12) check closed dictionary
+
+p = dexists(d, "bar");
+
+if (p) exit(12);
+
+
+# 13) read closed dictionary
+
+p = dread(d, "bar");
+
+if (!is_void(p)) exit(13);
+
+
+# 14) write closed dictionary
+
+p = dwrite(d, "bar", 12);
+
+if (p) exit(14);
+
+
+# 15) remove from closed dictionary
+
+p = dremove(d, "bar");
+
+if (p) exit(15);
+
+
+print("15 subtests ");

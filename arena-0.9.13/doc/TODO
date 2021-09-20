@@ -1,0 +1,7 @@
+- introduce arch() function that returns architecture information
+- add is_null() function to memory library functions
+- allow escaped double quotes in double quote strings
+- document that the namespace for lambdas is completely separate
+- create xstrdup() helper in libmisc
+- write HOWTO on implementing library functions in C
+- add offset to string search functions

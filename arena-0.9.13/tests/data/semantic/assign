@@ -1,0 +1,121 @@
+# 1) regular assign
+
+a = 12;
+
+if (a != 12) exit(1);
+
+
+# 2) array assign
+
+a[4] = 42;
+
+if ((int) a != 5 || a[4] != 42) exit(2);
+
+
+# 3) nested array assign
+
+a = ();
+a[1][2] = 22;
+
+if ((int) a != 2 || (int) a[1] != 3 || a[1][2] != 22) exit(3);
+
+
+# 4) combined assignment and addition
+
+a = 5;
+a += 4;
+
+if (a != 9) exit(4);
+
+
+# 5) combined assignment and subtraction
+
+a = 5;
+a -= 4;
+
+if (a != 1) exit(5);
+
+
+# 6) combined assignment and multiplication
+
+a = 5;
+a *= 4;
+
+if (a != 20) exit(6);
+
+
+# 7) combined assignment and division
+
+a = 5;
+a /= 4;
+
+if (a != 1) exit(7);
+
+
+# 8) combined assignment and bitwise and
+
+a = 5;
+a &= 4;
+
+if (a != 4) exit(8);
+
+
+# 9) combinaed assignment and bitwise or
+
+a = 5;
+a |= 2;
+
+if (a != 7) exit(9);
+
+
+# 10) combined assignment and bitwise exclusive or
+
+a = 12;
+a ^= 4;
+
+if (a != 8) exit(10);
+
+
+# 11) combined assignment and bitwise left shift
+
+a = 12;
+a <<= 2;
+
+if (a != 48) exit(11);
+
+
+# 12) combined assignment and bitwise right shift
+
+a = 48;
+a >>= 2;
+
+if (a != 12) exit(12);
+
+
+# 13) undefined variable
+
+if (undefinedvar != ()) exit(13);
+
+
+# 14) out of upper bound array index
+
+a = mkarray(1,2);
+
+if (a[3] != ()) exit(14);
+
+
+# 15) negative array indexing
+
+a = mkarray(1,2);
+
+if (a[-1] != 2 || a[-2] != 1) exit(15);
+
+
+# 16) out of lower bound array index
+
+a = mkarray(1,2);
+
+if (a[-10] != ()) exit(16);
+
+
+print("16 subtests ");

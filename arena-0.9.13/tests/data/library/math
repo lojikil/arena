@@ -1,0 +1,153 @@
+# 1) exp
+
+a = 2.0;
+b = exp(a);
+s = sprintf("%.5f", b);
+
+if (s != "7.38906") exit(1);
+
+
+# 2) log
+
+a = 2.0;
+b = log(a);
+s = sprintf("%.5f", b);
+
+if (s != "0.69315") exit(2);
+
+
+# 3) log10
+
+a = 100.0;
+b = log10(a);
+s = sprintf("%.5f", b);
+
+if (s != "2.00000") exit(3);
+
+
+# 4) sqrt
+
+a = 25.0;
+b = sqrt(a);
+s = sprintf("%.5f", b);
+
+if (s != "5.00000") exit(4);
+
+
+# 5) ceil
+
+a = 25.2;
+b = ceil(a);
+s = sprintf("%.5f", b);
+
+if (s != "26.00000") exit(5);
+
+
+# 6) floor
+
+a = 25.7;
+b = floor(a);
+s = sprintf("%.5f", b);
+
+if (s != "25.00000") exit(6);
+
+
+# 7) fabs
+
+a = -12.4;
+b = fabs(a);
+s = sprintf("%.5f", b);
+
+if (s != "12.40000") exit(7);
+
+
+# 8) sin
+
+a = 1.0;
+b = sin(a);
+s = sprintf("%.5f", b);
+
+if (s != "0.84147") exit(8);
+
+
+# 9) cos
+
+a = 1.0;
+b = cos(a);
+s = sprintf("%.5f", b);
+
+if (s != "0.54030") exit(9);
+
+
+# 10) tan
+
+a = 1.0;
+b = tan(a);
+s = sprintf("%.5f", b);
+
+if (s != "1.55741") exit(10);
+
+
+# 11) asin
+
+a = 1.0;
+b = asin(a);
+s = sprintf("%.5f", b);
+
+if (s != "1.57080") exit(11);
+
+
+# 12) acos
+
+a = 1.0;
+b = acos(a);
+s = sprintf("%.5f", b);
+
+if (s != "0.00000") exit(12);
+
+
+# 13) atan
+
+a = 1.0;
+b = atan(a);
+s = sprintf("%.5f", b);
+
+if (s != "0.78540") exit(13);
+
+
+# 14) sinh
+
+a = 1.0;
+b = sinh(a);
+s = sprintf("%.5f", b);
+
+if (s != "1.17520") exit(14);
+
+
+# 15) cosh
+
+a = 1.0;
+b = cosh(a);
+s = sprintf("%.5f", b);
+
+if (s != "1.54308") exit(15);
+
+
+# 16) tanh
+
+a = 1.0;
+b = tanh(a);
+s = sprintf("%.5f", b);
+
+if (s != "0.76159") exit(16);
+
+
+# 17) abs
+
+a = -23;
+b = abs(a);
+
+if (b != 23) exit(17);
+
+
+print("17 subtests ");

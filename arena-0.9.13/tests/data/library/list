@@ -1,0 +1,197 @@
+# 1) create empty list
+
+a = nil();
+
+if (!is_array(a) || (int) a != 0) exit(1);
+
+
+# 2) prepend one element
+
+a = cons(1, nil());
+
+if ((int) a != 1 || a[0] != 1) exit(2);
+
+
+# 3) prepend three elements
+
+a = cons(1, cons(2, cons(3, nil())));
+
+if ((int) a != 3 || a[0] != 1 || a[1] != 2 || a[2] != 3) exit(3);
+
+
+# 4) head of empty list
+
+a = head(nil());
+
+if (!is_void(a)) exit(4);
+
+
+# 5) head of three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = head(a);
+
+if (b != 1) exit(5);
+
+
+# 6) tail of empty list
+
+a = tail(nil());
+
+if (!is_array(a) || (int) a != 0) exit(6);
+
+
+# 7) tail of three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = tail(a);
+
+if ((int) b != 2 || b[0] != 2 || b[1] != 3) exit(7);
+
+
+# 8) last of empty list
+
+a = last(nil());
+
+if (!is_void(a)) exit(8);
+
+
+# 9) last of three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = last(a);
+
+if (b != 3) exit(9);
+
+
+# 10) init of empty list
+
+a = init(nil());
+
+if (!is_array(a) || (int) a != 0) exit(10);
+
+
+# 11) init of three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = init(a);
+
+if ((int) b != 2 || b[0] != 1 || b[1] != 2) exit(11);
+
+
+# 12) take 2 elements from empty list
+
+a = take(nil(), 2);
+
+if (!is_array(a) || (int) a != 0) exit(12);
+
+
+# 13) take 2 elements from three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = take(a, 2);
+
+if ((int) b != 2 || b[0] != 1 || b[1] != 2) exit(13);
+
+
+# 14) drop 2 elements from empty list
+
+a = drop(nil(), 2);
+
+if (!is_array(a) || (int) a != 0) exit(14);
+
+
+# 15) drop 2 elements from three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = drop(a, 2);
+
+if ((int) b != 1 || b[0] != 3) exit(15);
+
+
+# 16) length of empty list
+
+a = length(nil());
+
+if (a != 0) exit(16);
+
+
+# 17) length of three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = length(a);
+
+if (b != 3) exit(17);
+
+
+# 18) null test of empty list
+
+a = null(nil());
+
+if (!is_bool(a) || !a) exit(18);
+
+
+# 19) null test of three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = null(a);
+
+if (!is_bool(b) || b) exit(19);
+
+
+# 20) elem test in empty list
+
+a = nil();
+b = elem(a, 2);
+
+if (!is_bool(b) || b) exit(20);
+
+
+# 21) positive elem test in three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = elem(a, 2);
+
+if (!is_bool(b) || !b) exit(21);
+
+
+# 22) negative elem test in three-element list
+
+a = cons(1, cons(2, cons(3, nil())));
+b = elem(a, 4);
+
+if (!is_bool(b) || b) exit(22);
+
+
+# 23) intersperse value in single-element list
+
+a = mkarray(42);
+b = intersperse(a, 0);
+
+if ((int) b != 1 || b[0] != 42) exit(23);
+
+
+# 24) intersperse value in multi-element list
+
+a = explode("foo");
+b = intersperse(a, "x");
+c = implode(b);
+
+if (c != "fxoxo") exit(24);
+
+
+# 25) replicate zero times
+
+a = replicate(42, 0);
+
+if (!is_array(a) || (int) a != 0) exit(25);
+
+
+# 26) replicate three times
+
+a = replicate(42, 3);
+
+if ((int) a != 3 || a[0] != 42 || a[1] != 42 || a[2] != 42) exit(26);
+
+
+print("26 subtests ");

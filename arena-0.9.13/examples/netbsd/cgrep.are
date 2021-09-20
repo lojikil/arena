@@ -1,0 +1,112 @@
+#! /usr/bin/env arena
+
+/* $NetBSD$ */
+
+/*
+ * Copyright © 2006 Alistair Crooks.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// Small program to grep for regular expressions in files
+// this variant displays the matching text in standout mode
+
+include "libregex.are";
+
+// quick and dirty hardcoded hack
+BOLD_ON = "\x1b[3m";
+BOLD_OFF = "\x1b[23m";
+
+
+// open file `f' and grep for it in file `f'
+void
+grep(struct r, string f)
+{
+	if (f == "") {
+		fp = stdin;
+	} else {
+		// open the file and check it worked
+		fp = fopen(f, "r");
+		if (is_void(fp)) {
+			err = sprintf("%s isn't a valid file", f);
+			throw(err);
+		}
+	}
+	for (line = 1 ; ; line++) {
+		s = fgets(fp);
+		if (is_void(s)) {
+			break;
+		}
+		// need to iterate, or subsequent matches will be missed
+		flags = 0;
+		for (iter = 0 ; ; iter++) {
+			matches = r.regexec(s, flags);
+			if (r.result != REG_MATCH) {
+				if (iter > 0) {
+					printf("%s", s);
+				}
+				break;
+			}
+			from = 0;
+			for (i = 0 ; i < 10 ; i++) {
+				if (matches[i * 2] >= 0) {
+					if (iter == 0) {
+						printf("%s:%d:", f, line);
+					}
+					printf("%s%s%s%s",
+						substr(s, from, matches[i * 2]),
+						BOLD_ON,
+						substr(s, matches[i * 2], matches[(i * 2) + 1] - matches[i * 2]),
+						BOLD_OFF);
+					from = matches[(i * 2) + 1];
+				}
+			}
+			s = substr(s, from, strlen(s) - from);
+			flags = REG_NOTBOL;
+		}
+	}
+	if (f != "") {
+		fclose(fp);
+	}
+}
+
+// compile the regular expression
+try {
+	re = new regexp(argv[1]);
+} catch (e) {
+	print("Exception: ", e, "\n");
+}
+
+if (argc < 3) {
+	grep(re, "");
+} else {
+	for (i = 2 ; i < argc ; i++) {
+		try {
+			grep(re, argv[i]);
+		} catch (e) {
+			print("Exception \x22", e, "\x22 occurred\n");
+		}
+	}
+}

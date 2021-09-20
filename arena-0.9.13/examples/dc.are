@@ -1,0 +1,430 @@
+// DC deskcalculator - Copyright 1997,2006 J.L. Bezemer
+// You can redistribute this file and/or modify it under
+// the terms of the GNU General Public License
+
+// This program is part of Arena
+
+// To make a RPN (HP style) deskcalculator you don't need very much:
+// Just a simple parser, a stack and an interpreter that follows
+// these three simple rules:
+// - if it is a command, execute it;
+// - if it isn't a command, try to convert it to a number;
+// - if it isn't a number, throw an exception.
+// The interpreter is not much more than a simple program
+// that receives tokens from the parser and tries to find them
+// in a table.
+
+// This is the equivalent of the basic parsing system in Forth.
+// It features a Terminal Input Buffer, called TIB, that is
+// filled by the word REFILL. The word PARSE returns a token
+// delimited by delimiter d.
+
+tib = "";                              // This is the terminal input buffer
+
+string parse (string d) {
+  do {
+    p = strchr (tib, d);
+    if (p == ()) {
+      str = tib;
+      tib = "";
+    } else {
+      str = left (tib, p);
+      tib = right (tib, strlen (tib) - (p + 1));
+    }
+  } while ((str == "") && (strlen (tib) > 0));
+  global ("tib"); return (str);
+}
+
+void refill (s) {
+  tib = trim (fgets (s)); global ("tib");
+}
+
+// This is the equivalent of the Data Stack in Forth.
+// Values are pushed on the stack by push() and popped
+// from the stack by pop(). In Forth this is usually 
+// a transparent process. The stackpointer is stored in sp.
+
+stack = mkarray ();                    // this is the stack
+sp = 0;                                // this is the stack pointer
+
+float pop () {
+  if (sp > 0) {
+     f = (stack [--sp]);
+     global ("stack", "sp");
+     return (f);
+  } else {
+    throw ("Stack empty");
+    return (0.0);
+  }
+}
+
+void push (forced float f) {
+  stack [sp++] = f;
+  global ("stack", "sp");
+}
+
+// These are all commands of the interpreter. They can be reduced to
+// push() and pop() calls.
+
+// These words do basic aritmethic
+
+void add () {
+  push (pop () + pop ());
+}
+
+void sub () {
+  a = pop ();
+  push (pop () - a);
+}
+
+void div () {
+  a = pop ();
+  if (a == 0.0) throw ("Divide by zero");
+  else push (pop () / a);
+}
+
+void mul () {
+  push (pop () * pop ());
+}
+
+// These words do extended arithmatic
+
+void mod () {
+  a = pop ();
+  if (a == 0.0) throw ("Divide by zero");
+  else push (pop () % a);
+}
+
+void abs () {
+  a = pop ();
+  push (a < 0 ? -a : a);
+}
+
+void negate () {
+  push (0 - pop ());
+}
+
+void min () {
+  a = pop ();
+  b = pop ();
+  push (a > b ? b : a);
+}
+
+void max () {
+  a = pop ();
+  b = pop ();
+  push (a > b ? a : b);
+}
+
+// These words do binary aritmatic
+
+void invert () {
+  a = pop ();
+  push (~a);
+}
+
+void or () {
+  push (pop () | pop ());
+}
+
+void and () {
+  push (pop () & pop ());
+}
+
+void xor () {
+  push (pop () ^ pop ());
+}
+
+void lshift () {
+  a = pop ();
+  push (pop () << a);
+}
+
+void rshift () {
+  a = pop ();
+  push (pop () >> a);
+}
+
+// These words do quick (binary) aritmatic
+
+void twotimes () {
+  push ((pop () << 1));
+}
+
+void twodiv () {
+  push ((pop () >> 1));
+}
+
+void increment () {
+  push (pop () + 1);
+}
+
+void decrement () {
+  push (pop () - 1);
+}
+
+// These words handle built-in variables
+
+vars = mkarray (0, 0, 0, 0, 0, 0, 0, 0);
+
+void var_a () {
+  push (0.0);
+}
+
+void var_b () {
+  push (1.0);
+}
+
+void var_c () {
+  push (2.0);
+}
+void var_d () {
+  push (3.0);
+}
+
+void var_e () {
+  push (4.0);
+}
+
+void var_f () {
+  push (5.0);
+}
+
+void var_g () {
+  push (6.0);
+}
+
+void var_h () {
+  push (7.0);
+}
+
+void fetch () {
+  a = (int) pop ();
+  if ((a < 0) || (a > 7)) throw ("Bad variable");
+  else push (vars [a]);
+}
+
+void store () {
+  a = (int) pop ();
+  if ((a < 0) || (a > 7)) throw ("Bad variable");
+  else vars [a] = pop ();
+  global ("vars");
+}
+
+void plusstore () {
+  a = (int) pop ();
+  if ((a < 0) || (a > 7)) throw ("Bad variable");
+  else vars [a] += pop ();
+  global ("vars");
+}
+
+void question () {
+  fetch (); dot ();
+}
+
+// These words do basic stack operations
+
+void drop () {
+  a = pop ();
+}
+
+void dup () {
+  a = pop ();
+  push (a); push (a);
+}
+
+void rot () {
+  a = pop (); b = pop (); c = pop ();
+  push (b); push (c); push (a);
+}
+
+void swap () {
+  a = pop (); b = pop ();
+  push (a); push (b);
+}
+
+void over () {
+  a = pop (); b = pop ();
+  push (b); push (a); push (b);
+}
+
+void dots () {
+  for (x = 0; x < sp; x++) printf ("%f ", stack [x]);
+  print ("(TOS)\n");
+}
+
+// These are I/O words
+
+void emit () {
+  print (chr ((int) pop ()));
+}
+
+void dot () {
+  printf ("%f ", pop ());
+}
+
+void dotparen () {
+  print (parse (")"));
+}
+
+void cr () {
+  print ("\n");
+}
+
+void space () {
+  print (" ");
+}
+
+void spaces () {
+  a = pop ();
+  for (x = 0; x < a; x++) space ();
+}
+  
+// These are miscellenious words
+
+void paren () {
+  a = parse (")");
+}
+
+void char () {
+  push (ord (parse (" ")));
+}
+
+void times () {
+  push ((float) time());
+}
+
+void random () {
+  push ((float) rand (0, RAND_MAX));
+}
+
+void quit () {
+  exit (0);
+}
+
+void depth () {
+  push ((float) sp);
+}
+
+// This is the basic interpreter. Here the tokens are mapped
+// to the actual words we defined before.
+
+words = mkstruct (
+  "+", add,
+  "-", sub,
+  "/", div,
+  "*", mul,
+  ".", dot,
+  "n", dot,
+  "mod", mod,
+  "%", mod,
+  "abs", abs,
+  "negate", negate,
+  "invert", invert,
+  "min", min,
+  "max", max,
+  "or", or,
+  "and", and,
+  "xor", xor,
+  "lshift", lshift,
+  "rshift", rshift,
+  "2*", twotimes,
+  "2/", twodiv,
+  "1+", increment,
+  "1-", decrement,
+  "a.", var_a, 
+  "b.", var_b, 
+  "c.", var_c, 
+  "d.", var_d, 
+  "e.", var_e, 
+  "f.", var_f, 
+  "g.", var_g, 
+  "h.", var_h,
+  "!", store,
+  "+!", plusstore,
+  "@", fetch,
+  "?", question,
+  "char", char,
+  "emit", emit,
+  "space", space,
+  "spaces", spaces,
+  ".(", dotparen,
+  "cr", cr,
+  "drop", drop,
+  "dup", dup,
+  "d", dup, 
+  "rot", rot,
+  "swap", swap,
+  "r", swap,
+  "over", over,
+  "time", times,
+  "random", random,
+  "(", paren,
+  ".s", dots,
+  "f", dots,
+  "depth", depth,
+  "z", depth,
+  "q", quit,
+  "quit", quit,
+  "bye", quit,
+  "exit", quit
+);
+
+// This routine tries to figure out whether this is a number or a misspelled
+// command.
+
+bool is_number (string w) {
+  if (strlen (w) == 0) return (false);
+  else {
+    s = left (w, 1);
+    if ((s != "-") && (s != "+") && (! isdigit (s))) return (false);
+    else {
+      n = 0;
+      for (x = 1; x < strlen (w); x++) {
+          d = substr (w, x, 1);
+          if ((! isdigit (d)) && (d != ".")) n++;
+      }
+      return (n == 0);
+    }
+  }
+}
+
+// execute() takes the actual string and parses it. Every token is mapped to
+// the table and any equivalent words are executed. If a token does not
+// contain a word, it tries to convert it to a float. If that fails too,
+// it is an unsupported token.
+
+void execute () {
+  do {
+    token = tolower (parse (" "));     // get a token
+    if (token != "") {                 // if it isn't empty, look it up
+      word = struct_get (words, token);
+      if (word == ())                  // if it wasn't found, convert it
+         if (is_number (token)) push (token);
+         else throw ("Undefined name");
+      else word ();                    // execute the word we found
+    }
+  } while (token != "");               // continue until no more words
+}                                      // in the input buffer
+
+// The interpreter shows the prompt, refills the buffer and tries to execute
+// whatever has been entered. If this causes an error, it is caught.
+
+void interpret (ch, prompt) {
+  for (;;) {
+    if (prompt) print ("OK\n");        // show a prompt if interactive
+    refill (ch);                       // get a line
+    try execute ();                    // now try to execute it
+    catch (e) printf ("%s ", e);       // an exception was thrown
+  }
+}
+
+// Use the keyboard, unless you've issued a valid file at the prompt.
+
+prompt = false;
+if ((argc > 1) && ((ch = fopen (argv [1], "r")) != ()));
+else {
+  ch = stdin; prompt = true;
+}
+
+interpret (ch, prompt);

@@ -1,0 +1,278 @@
+# 1) allocate memory
+
+a = malloc(12);
+
+if (!is_resource(a) || !is_mem_resource(a)) exit(1);
+
+
+# 2) check memory writability
+
+a = malloc(42);
+b = is_rw(a);
+
+if (!b) exit(2);
+
+
+# 3) free memory
+
+a = malloc(42);
+free(a);
+b = msize(a);
+
+if (b != 0) exit(3);
+
+
+# 4) writability of freed resource
+
+a = malloc(42);
+free(a);
+b = is_rw(a);
+
+if (b) exit(4);
+
+
+# 5) mputchar and mgetchar
+
+a = malloc(1);
+for (i = 0; i < 10; i++) {
+  mputchar(a, i, i * 10);
+}
+ok = true;
+for (i = 0; i < 10; i++) {
+  ok = ok && (mgetchar(a, i) == i * 10);
+}
+b = mgetchar(a, 10);
+c = msize(a);
+
+if (!ok || !is_void(b) || c != 10) exit(5);
+
+
+# 6) mputshort and mgetshort
+
+a = malloc(1);
+for (i = 0; i < 10; i++) {
+  mputshort(a, i * 4, i * 10);
+}
+ok = true;
+for (i = 0; i < 10; i++) {
+  ok = ok && (mgetshort(a, i * 4) == i * 10);
+}
+b = mgetshort(a, 10 * 4);
+
+if (!ok || !is_void(b)) exit(6);
+
+
+# 7) mputint and mgetint
+
+a = malloc(1);
+for (i = 0; i < 10; i++) {
+  mputint(a, i * 8, i * 10);
+}
+ok = true;
+for (i = 0; i < 10; i++) {
+  ok = ok && (mgetint(a, i * 8) == i * 10);
+}
+b = mgetshort(a, 10 * 8);
+
+if (!ok || !is_void(b)) exit(7);
+
+
+# 8) cnull
+
+a = cnull();
+b = msize(a);
+c = is_rw(a);
+
+if (b != 0 || c) exit(8);
+
+
+# 9) cstring
+
+a = cstring("foobar");
+b = msize(a);
+c = is_rw(a);
+
+if (b != 7 || !c) exit(9);
+
+
+# 10) mstring
+
+a = cstring("foobar");
+b = mstring(a, 0);
+c = mstring(a, 3);
+
+if (b != "foobar" || c != "bar") exit(10);
+
+
+# 11) mputptr and mgetptr
+
+a = malloc(1);
+b = cstring("foobar");
+mputptr(a, 0, b);
+c = mgetptr(a, 0, false);
+d = mstring(c, 0);
+
+if (d != "foobar") exit(11);
+
+
+# 12) calloc
+
+a = calloc(10, 10);
+ok = true;
+for (i = 0; i < 100; i++) {
+  ok = ok && (mgetchar(a, i) == 0);
+}
+b = msize(a);
+
+if (!ok || b != 100) exit(12);
+
+
+# 13) mputfloat and mgetfloat
+
+a = malloc(1);
+for (i = 0; i < 10; i++) {
+  mputfloat(a, i * 16, i * 10.0);
+}
+ok = true;
+for (i = 0; i < 10; i++) {
+  ok = ok && (mgetfloat(a, i * 16) == i * 10.0);
+}
+b = mgetfloat(a, 10 * 16);
+
+if (!ok || !is_void(b)) exit(13);
+
+
+# 14) mputdouble and mgetdouble
+
+a = malloc(1);
+for (i = 0; i < 10; i++) {
+  mputdouble(a, i * 16, i * 10.0);
+}
+ok = true;
+for (i = 0; i < 10; i++) {
+  ok = ok && (mgetdouble(a, i * 16) == i * 10.0);
+}
+b = mgetdouble(a, 10 * 16);
+
+if (!ok || !is_void(b)) exit(13);
+
+
+# 15) realloc
+
+a = malloc(12);
+for (i = 0; i < 12; i++) {
+  mputchar(a, i, 42);
+}
+b = realloc(a, 6);
+if (!b) exit(15);
+for (i = 0; i < 6; i++) {
+  if (mgetchar(a, i) != 42) exit(15);
+}
+for (; i < 12; i++) {
+  if (mgetchar(a, i) != ()) exit(15);
+}
+
+
+# 16) memset
+
+a = malloc(1);
+b = memset(a, 0, 42, 10);
+c = msize(a);
+for (i = 0; i < 10; ++i) {
+  if (mgetchar(a, i) != 42) exit(16);
+}
+
+if (!is_resource(a) || b != true || c != 10) exit(16);
+
+
+# 17) memcpy
+
+a = malloc(10);
+memset(a, 0, 42, 10);
+b = malloc(1);
+c = memcpy(b, 10, a, 0, 10);
+d = msize(b);
+for (i = 0; i < 10; ++i) {
+  if (mgetchar(b, i + 10) != 42) exit(17);
+}
+
+if (!is_resource(a) || !is_resource(b) || c != true || d != 20) exit(17);
+
+
+# 18) memmove
+
+a = malloc(10);
+memset(a, 0, 42, 10);
+b = malloc(1);
+c = memmove(b, 10, a, 0, 10);
+d = msize(b);
+for (i = 0; i < 10; ++i) {
+  if (mgetchar(b, i + 10) != 42) exit(17);
+}
+
+if (!is_resource(a) || !is_resource(b) || c != true || d != 20) exit(17);
+
+
+# 19) memcmp with non-matching size
+
+a = malloc(10);
+b = malloc(1);
+c = memcmp(a, 0, b, 0, 10);
+
+if (!is_resource(a) || !is_resource(b) || c != ()) exit(19);
+
+
+# 20) memcmp
+
+a = malloc(10);
+memset(a, 0, 42, 10);
+b = malloc(10);
+memset(b, 0, 43, 10);
+c = memcmp(a, 0, b, 0, 10);
+
+if (!is_resource(a) || !is_resource(b) || !is_int(c) || c >= 0) exit(20);
+
+
+# 21) memchr
+
+a = malloc(10);
+memset(a, 0, 42, 9);
+mputchar(a, 9, 43);
+b = memchr(a, 0, 42, 10);
+c = memchr(a, 1, 42, 9);
+d = memchr(a, 0, 43, 10);
+e = memchr(a, 0, 44, 10);
+
+if (!is_resource(a) || b != 0 || c != 1 || d != 9 || e != ()) exit(21);
+
+
+# 22) is_null
+
+a = cnull();
+b = malloc(10);
+c = is_null(a);
+d = is_null(b);
+
+if (c != true || d != false) exit(22);
+
+
+# 23) mputstring
+
+a = malloc(1);
+b = mputstring(a, 0, "foobar");
+c = msize(a);
+
+if (b != true || c != 6) exit(23);
+
+
+# 24) mgetstring
+
+a = malloc(1);
+mputstring(a, 0, "foobar");
+b = mgetstring(a, 3, 3);
+d = mgetstring(a, 3, 4);
+
+if (b != "bar" || d != ()) exit(24);
+
+
+print("24 subtests ");

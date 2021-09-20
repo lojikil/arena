@@ -1,0 +1,86 @@
+# 1) assign and call lambda expression
+
+f = \ (int i) { return 2 * i; };
+a = f(2);
+
+if (a != 4) exit(1);
+
+
+# 2) put lambda expression into struct
+
+a = mkstruct();
+a.f = \ (int i) { return 2 * i; };
+b = a.f(2);
+
+if (b != 4) exit(2);
+
+
+# 3) initialize struct method from lambda expression
+
+template foo
+{
+  f = \ (int i) { return 2 * i; };
+}
+a = new foo();
+b = a.f(2);
+
+if (b != 4) exit(3);
+
+
+# 4) use lambda expression for as function argument
+
+a = mkarray(1, 2, 3);
+b = foldl(\ (int x, int y) { return x+y; }, 0, a);
+
+if (b != 6) exit(4);
+
+
+# 5) return lambda expression from function
+
+fn foo()
+{
+  return \ (int i) { return 2 * i; };
+}
+f = foo();
+a = f(2);
+
+if (a != 4) exit(5);
+
+
+# 6) type of lambda expression
+
+a = type_of(\ (int i) { return 2 * i; });
+
+if (a != "fn") exit(6);
+
+
+# 7) nested lambda expression inside function
+
+fn foo()
+{
+  return \ () { return \ (int i) { return 2 * i; }; };
+}
+f = foo();
+g = f();
+a = g(2);
+
+if (a != 4) exit(7);
+
+
+# 8) name of lambda function
+
+f = \ (int i) { return 2 * i; };
+n = function_name(f);
+
+if (n != "\\lambda") exit(8);
+
+
+# 9) name of named function
+
+f = strlen;
+n = function_name(f);
+
+if (n != "strlen") exit(9);
+
+
+print("9 subtests ");

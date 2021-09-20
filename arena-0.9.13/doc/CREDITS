@@ -1,0 +1,21 @@
+CREDITS
+=======
+
+This file contains a list of people that have contributed
+something to Arena or this particular implementation of the
+language. This means not only code changes, but also
+testing of the implementation under different operating
+systems and sending in meaningful bug reports.
+
+Contributors:
+Bengi Fritsche <eoc [at] eocentral.de>
+Hans Bezemer <hansoft [at] bigfoot.com>
+Jasper Lievisse Adriaanse <jasper [at] nedbsd.nl>
+Dennis Heuer <dh [at] triple-media.com>
+Anthony C Howe <achowe [at] snert.com>
+Maurice Kinal
+Fabian Tschiatschek <fabian.tschiatschek [at] gmx.net>
+Claus Assmann <ca+arena [at] esmtp.org>
+Alistair Crooks <agc [at] pkgsrc.org>
+Sander van Dijk <a.h.vandijk [at] gmail.com>
+Liran Nuna <liranuna [at] gmail.com>

@@ -1,0 +1,174 @@
+// script wrapper for curses routines - see curses(3)
+
+/* $NetBSD$ */
+
+/*
+ * Copyright © 2006 Alistair Crooks.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// window class
+template window {
+	lib;		// handle to dynamic library's .so
+	windows;	// array of windows
+	current;	// current window name
+
+	void window()
+	{
+		if (!dyn_supported()) {
+			throw "dynamic loading not supported";
+		}
+		this.lib = dyn_open("libcurses.so");
+		if (!is_resource(this.lib)) {
+			throw "libcurses not found";
+		}
+		win = dyn_call_ptr(this.lib, "initscr");
+		if (is_void(win)) {
+			throw "initscr call failed";
+		}
+
+		// No character echo.
+		dyn_call_void(this.lib, "noecho");
+
+		// No CR/NL translation.
+		dyn_call_void(this.lib, "nonl");
+
+		// 8-bit clean.
+		dyn_call_void(this.lib, "raw");
+
+		// Use hardware insert/delete line.
+		dyn_call_void(this.lib, "idlok", win, 1);
+
+		// Put the cursor keys into application mode.
+		dyn_call_void(this.lib, "keypad", win, 1);
+
+		// stdscr needs to be in the window list
+		this.windows = mkstruct("stdscr", win);
+		this.current = "stdscr";
+	}
+
+	// call endwin to exit from curses
+	void destructor()
+	{
+		err = dyn_call_int(this.lib, "endwin");
+		if (err != 0) {
+			throw "endwin call failed";
+		}
+	}
+
+	// move to a coordinate in the window
+	void move(int y, int x)
+	{
+		err = dyn_call_int(this.lib, "wmove", struct_get(this.windows, this.current), y, x);
+		if (err != 0) {
+			throw "wmove call failed";
+		}
+	}
+
+	// refresh the window
+	void refresh()
+	{
+		err = dyn_call_int(this.lib, "wrefresh", struct_get(this.windows, this.current));
+		if (err != 0) {
+			throw "wrefresh call failed";
+		}
+	}
+
+	// add a string to the window
+	void addstr(string s)
+	{
+		err = dyn_call_int(this.lib, "waddstr", struct_get(this.windows, this.current), s);
+		if (err != 0) {
+			throw "waddstr call failed";
+		}
+	}
+
+	// enter standout mode
+	void standout()
+	{
+		dyn_call_int(this.lib, "wstandout", struct_get(this.windows, this.current));
+	}
+
+	// exit standout mode
+	void standend()
+	{
+		dyn_call_int(this.lib, "wstandend", struct_get(this.windows, this.current));
+	}
+
+	// create a new window
+	void newwin(string name, int lines, int cols, int y, int x)
+	{
+		win = dyn_call_ptr(this.lib, "newwin", lines, cols, y, x);
+		if (is_void(win)) {
+			throw "newwin call failed";
+		}
+		this.windows = struct_set(this.windows, name, win);
+		this.current = name;
+	}
+
+	// delete the window, make the new current window "stdscr"
+	void delwin()
+	{
+		err = dyn_call_int(this.lib, "delwin", struct_get(this.windows, this.current));
+		if (err != 0) {
+			throw "delwin call failed";
+		}
+		this.windows = struct_unset(this.windows, this.current);
+		this.current = "stdscr";
+	}
+
+	// make `name' the current window
+	void focus(string name)
+	{
+		w = struct_get(this.windows, name);
+		if (is_void(w)) {
+			throw "no such window";
+		}
+		this.current = name;
+	}
+
+	// clear the window
+	void clear()
+	{
+		err = dyn_call_int(this.lib, "wclear", struct_get(this.windows, this.current));
+		if (err != 0) {
+			throw "wclear call failed";
+		}
+	}
+
+	// return a list of window names
+	array list()
+	{
+		return struct_fields(this.windows);
+	}
+
+	// return the current window name
+	string getcurrent()
+	{
+		return this.current;
+	}
+
+}
